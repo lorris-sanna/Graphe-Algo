@@ -205,7 +205,7 @@ void affichagegraphe::afficher() {
     }
 }
 
-void affichagegraphe::creerGraphe() {
+graphe affichagegraphe::creerGraphe() {
     // Initialiser les vecteurs fs et aps
     std::vector<int> fs;
     std::vector<int> aps;
@@ -258,5 +258,7 @@ void affichagegraphe::creerGraphe() {
     // Créez le graphe avec les vecteurs fs et aps
     graphe nouveauGraphe(fs, aps);
 
-    nouveauGraphe.afficher();
+    //nouveauGraphe.afficher();
+
+    return nouveauGraphe;
 }

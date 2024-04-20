@@ -8,6 +8,16 @@ int graphe::nbSommet() const
     return d_aps[0];
 }
 
+vector<int> graphe::getFS() const
+{
+    return d_fs;
+}
+
+vector<int> graphe::getAPS() const
+{
+    return d_aps;
+}
+
 vector<vector<int>> graphe::distance() const
 {
     int nbSommet = this->nbSommet();
@@ -104,20 +114,33 @@ void adj2fs_aps(const vector<vector<int>> a, vector<int> &fs, vector<int> &aps) 
     }
 }
 
-void graphe::afficher() {
-    cout << "fs[" << d_fs.size() << "]" << " = ";
-    cout << " {";
-    for (size_t i = 0; i < d_fs.size(); ++i) {
-        if (i > 0) cout << ", ";
-        cout << d_fs[i];
-    }
-    cout << "}" << endl;
+QString graphe::adjToString(const std::vector<std::vector<int>>& a) const {
+}
 
-    cout << "aps[" << d_aps.size() << "]" << " = ";
-    cout << " {";
-    for (size_t i = 0; i < d_aps.size(); ++i) {
-        if (i > 0) cout << ", ";
-        cout << d_aps[i];
+QString graphe::fsToString() const {
+    QString resultat;
+
+    // Conversion du vecteur d_fs en chaîne de caractères
+    resultat += "fs[" + QString::number(d_fs.size()) + "] = {";
+    for (size_t i = 0; i < d_fs.size(); ++i) {
+        if (i > 0) resultat += ", ";
+        resultat += QString::number(d_fs[i]);
     }
-    cout << "}" << endl;
+    resultat += "}";
+
+    return resultat;
+}
+
+QString graphe::apsToString() const {
+    QString resultat;
+
+    // Conversion du vecteur d_aps en chaîne de caractères
+    resultat += "aps[" + QString::number(d_aps.size()) + "] = {";
+    for (size_t i = 0; i < d_aps.size(); ++i) {
+        if (i > 0) resultat += ", ";
+        resultat += QString::number(d_aps[i]);
+    }
+    resultat += "}";
+
+    return resultat;
 }

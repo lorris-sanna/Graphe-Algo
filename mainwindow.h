@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "sommet.h"
 #include "affichagegraphe.h"
 #include "graphe.h"
 
@@ -37,7 +36,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    affichagegraphe* g;
+    affichagegraphe* affichagegraphe;
+    graphe* graphe;
     QGraphicsView *view;
 };
 #endif // MAINWINDOW_H
