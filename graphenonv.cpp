@@ -9,7 +9,7 @@ grapheNoNv::grapheNoNv(vector<int>& fs, vector<int>& aps): graphe(fs,aps)
 grapheNoNv::grapheNoNv()
 {}
 
-bool grapheNoNv::estOriente() const
+/*bool grapheNoNv::estOriente() const
 {
     return false;
 }
@@ -27,15 +27,18 @@ void grapheNoNv::setOriente(bool o)
 void grapheNoNv::setValue(bool v)
 {
     value = v;
-}
+}*/
 
 vector<vector<int>> grapheNoNv::matriceCouts(graphe& G, vector<arete> aretes) {
     return std::vector<std::vector<int>>();
 }
 
 void grapheNoNv::ecrireMatDansUnFichier(const vector<vector<int>>& matAdj, const std::string& nomFichierOUT) {
-    // Ouvrir le fichier dans répertoire courant + extension ou chemin absolu à donner
-    ofstream fOUT("../../graphes/" + nomFichierOUT + ".txt");
+    // Créer le répertoire "graphes" s'il n'existe pas
+    fs::create_directories("graphes");
+
+    // Ouvrir le fichier dans répertoire graphes + extension ou chemin absolu à donner
+    ofstream fOUT("graphes/" + nomFichierOUT + ".txt");
 
     // Vérification accès au fichier
     if (!fOUT.is_open()) {
@@ -77,7 +80,7 @@ void grapheNoNv::ecrireMatDansUnFichier(const vector<vector<int>>& matAdj, const
 
 vector<vector<int>> grapheNoNv::lireMatDepuisFichier(const string &nomFichierIN)
 {
-    ifstream fIN("../../graphes/" + nomFichierIN);
+    ifstream fIN("graphes/" + nomFichierIN);
     if (!fIN)
     {
         cout << "Impossible d'ouvrir le fichier " << nomFichierIN << endl;

@@ -22,10 +22,10 @@ class graphe
     public:
         graphe(vector<int> &fs, vector<int> &aps);
         graphe();
-        virtual bool estOriente() const = 0;
-        virtual bool estValue() const = 0;
-        virtual void setOriente(bool o) = 0;
-        virtual void setValue(bool v) = 0;
+        bool estOriente() const;
+        bool estValue() const;
+        void setOriente(bool o);
+        void setValue(bool v);
         int nbSommets() const;
         int nbAretes() const;
         vector<int> getFS() const;

@@ -6,6 +6,26 @@ graphe::graphe(vector<int> &fs,vector<int> &aps): d_fs{fs}, d_aps{aps}
 graphe::graphe(): d_fs{}, d_aps{}
 {}
 
+bool graphe::estOriente() const
+{
+    return oriente;
+}
+
+bool graphe::estValue() const
+{
+    return value;
+}
+
+void graphe::setOriente(bool o)
+{
+    oriente = o;
+}
+
+void graphe::setValue(bool v)
+{
+    value = v;
+}
+
 int graphe::nbSommets() const
 {
     return d_aps[0];

@@ -238,7 +238,7 @@ void MainWindow::on_btnCharger_clicked()
 {
     pageChargerGrapheWidget();
 
-    QDir repertoire("../../graphes/");
+    QDir repertoire("graphes/");
 
     // Vérification si le répertoire existe
     if (!repertoire.exists()) {
@@ -298,7 +298,7 @@ void MainWindow::on_btnChoisirGrapheCourant_clicked()
 {
     if (ui->editTxtFichier2->text() != "")
     {
-        QDir repertoire("../../graphes/");
+        QDir repertoire("graphes/");
         QStringList fichiers = repertoire.entryList(QDir::Files);
         bool fichierExiste = false;
         for (const QString& fichier : fichiers)
@@ -342,17 +342,20 @@ void MainWindow::on_btnChoisirGrapheCourant_clicked()
             // Créer un nouveau graphe selon le type déterminé
             if (oriente) {
                 if (value) {
-                    grapheCourant = new class grapheOV();
+                    grapheCourant = new grapheOV();
                 } else {
-                    grapheCourant = new class grapheOnV();
+                    grapheCourant = new grapheOnV();
                 }
+                grapheCourant->setValue(value);
+                grapheCourant->setOriente(true);
             } else {
                 if (value) {
-                    grapheCourant = new class grapheVnO();
+                    grapheCourant = new grapheVnO();
                 } else {
-                    grapheCourant = new class grapheNoNv();
+                    grapheCourant = new grapheNoNv();
                 }
-
+                grapheCourant->setValue(value);
+                grapheCourant->setOriente(false);
             }
             matCourant = grapheCourant->lireMatDepuisFichier(ui->editTxtFichier2->text().toStdString());
 
@@ -491,25 +494,33 @@ void MainWindow::on_btnTerminer_clicked()
         if (!affichagegraphe->estOriente() && !affichagegraphe->estValue())
         {
             graphe = new class grapheNoNv(affichagegraphe->creerGraphe());
+            graphe->setOriente(false);
+            graphe->setValue(false);
         }
         else if (affichagegraphe->estOriente() && !affichagegraphe->estValue())
         {
             graphe = new class grapheOnV(affichagegraphe->creerGraphe());
+            graphe->setOriente(true);
+            graphe->setValue(false);
         }
         else if (!affichagegraphe->estOriente() && affichagegraphe->estValue())
         {
             graphe = new class grapheVnO(affichagegraphe->creerGraphe());
+            graphe->setOriente(false);
+            graphe->setValue(true);
         }
         else
         {
             graphe = new class grapheOV(affichagegraphe->creerGraphe());
+            graphe->setOriente(true);
+            graphe->setValue(true);
         }
 
-        cout << (graphe->estOriente() ? "true" : "false") << endl;
+        /*cout << (graphe->estOriente() ? "true" : "false") << endl;
         cout << (graphe->estValue() ? "true" : "false") << endl;
 
         ui->labelFS->setText(graphe->fsToString());
-        ui->labelAPS->setText(graphe->apsToString());
+        ui->labelAPS->setText(graphe->apsToString());*/
     }
 }
 
@@ -530,13 +541,13 @@ void MainWindow::on_btnSave_clicked()
         } else if (graphe->estValue())
         {
             vector<arete> listeAretes = affichagegraphe->getAretes();
-            std::cout << "Liste des aretes : " << std::endl;
+            /*std::cout << "Liste des aretes : " << std::endl;
             for (const auto& arete : affichagegraphe->getAretes()) {
                 std::cout << arete.getDepart()->getNom().toInt() << " -> "
                           << arete.getArrivee()->getNom().toInt() << " (valeur : "
                           << arete.getValeur() << ")" << std::endl;
-                mat = graphe->matriceCouts(*graphe, listeAretes);
-            }
+            }*/
+            mat = graphe->matriceCouts(*graphe, listeAretes);
         }
         graphe->ecrireMatDansUnFichier(mat, ui->editTxtFichier1->text().toStdString());
         QMessageBox::warning(nullptr, "Succès", "Le fichier '" + ui->editTxtFichier1->text() + ".txt' a été sauvegardé dans le répertoire 'graphes'.");

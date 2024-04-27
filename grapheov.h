@@ -4,6 +4,9 @@
 #include "arete.h"
 #include "graphe.h"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 class grapheOV : public graphe
 {
     public:
@@ -11,10 +14,10 @@ class grapheOV : public graphe
         grapheOV(vector<int>& fs, vector<int>& aps);
         grapheOV();
 
-        bool estOriente() const override;
+        /*bool estOriente() const override;
         bool estValue() const override;
         void setOriente(bool o) override;
-        void setValue(bool o) override;
+        void setValue(bool o) override;*/
 
         void dantzig(vector<vector<int>>& c, vector<arete>& aretes);
 
