@@ -4,6 +4,10 @@
 #include "sommet.h"
 #include "arete.h"
 #include "graphe.h"
+#include "graphenonv.h"
+#include "grapheonv.h"
+#include "graphevno.h"
+#include "grapheov.h"
 
 #include <vector>
 #include <QString>
@@ -21,12 +25,17 @@ class affichagegraphe
 
         void setOriente(bool oriente);
         void setValue(bool value);
+        bool estOriente() const;
+        bool estValue() const;
 
+        const std::vector<arete>& getAretes() const;
         std::map<QString, std::vector<QString>> getSuccesseurs(const QString& nomSommet) const;
 
         void ajouterSommets(QString nomSommetDepart, QString nomSommetArrivee);
-        graphe creerGraphe();
+        const graphe& creerGraphe();
         void ajouterArete(sommet* nomSommetDepart, sommet* nomSommetArrivee, int valeur = 0);
+        void setAretes(vector<arete> aretes);
+        void matCout2Aretes(vector<vector<int>> matCout);
         void dessinerGraphe(QGraphicsScene* scene);
         void reset();
         bool isEmpty() const;

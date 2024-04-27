@@ -11,6 +11,18 @@ void affichagegraphe::setValue(bool value) {
     this->value = value;
 }
 
+bool affichagegraphe::estOriente() const {
+    return oriente;
+}
+
+bool affichagegraphe::estValue() const {
+    return value;
+}
+
+const std::vector<arete>& affichagegraphe::getAretes() const {
+    return aretes;
+}
+
 std::map<QString, std::vector<QString>> affichagegraphe::getSuccesseurs(const QString& nomSommet) const {
     std::map<QString, std::vector<QString>> successeursLocaux; // Variable locale pour stocker les successeurs
 
@@ -61,6 +73,81 @@ void affichagegraphe::ajouterArete(sommet* nomSommetDepart, sommet* nomSommetArr
 
     } else {
         QMessageBox::warning(nullptr, "Erreur", "Les sommets renseignés ne doivent pas être nuls.");
+    }
+}
+
+void affichagegraphe::setAretes(vector<arete> aretes)
+{
+    this->aretes = aretes;
+}
+
+void affichagegraphe::matCout2Aretes(vector<vector<int>> matCout) {
+    // Parcourir la matrice de coûts
+    for (size_t i = 0; i < matCout.size(); ++i) {
+        for (size_t j = 0; j < matCout[i].size(); ++j) {
+            if (matCout[i][j] != std::numeric_limits<int>::max() && matCout[i][j] != 0)
+            {
+                // Obtenir la valeur du coût
+                int valeur = matCout[i][j];
+
+                // Obtenir le nom des sommets de départ et d'arrivée
+                QString nomSommetDepart = QString::number(i+1);
+                QString nomSommetArrivee = QString::number(j+1);
+
+                // Ajouter les sommets si nécessaire
+                ajouterSommets(nomSommetDepart, nomSommetArrivee);
+
+                // Obtenir les pointeurs vers les sommets de départ et d'arrivée
+                sommet* sommetDepart = trouverSommet(nomSommetDepart);
+                sommet* sommetArrivee = trouverSommet(nomSommetArrivee);
+
+                // Ajouter l'arête si les sommets sont valides
+                if (sommetDepart && sommetArrivee) {
+                    // Vérifier si une arête identique existe déjà
+                    bool arreteExistante = false;
+                    for (const auto& existingArete : aretes) {
+                        if (existingArete.getDepart()->getNom() == sommetDepart->getNom() && existingArete.getArrivee()->getNom() == sommetArrivee->getNom()) {
+                            arreteExistante = true;
+                            break;
+                        }
+                    }
+
+                    // Si aucune arête identique n'existe, ajouter la nouvelle arête
+                    if (!arreteExistante) {
+                        // Vérifier si les sommets existent déjà dans la liste de sommets
+                        sommet* sommetDepartExistant = nullptr;
+                        sommet* sommetArriveeExistant = nullptr;
+
+                        for (auto& s : sommets) {
+                            if (s->getNom() == sommetDepart->getNom()) {
+                                sommetDepartExistant = s;
+                            }
+                            if (s->getNom() == sommetArrivee->getNom()) {
+                                sommetArriveeExistant = s;
+                            }
+                        }
+
+                        // Si les sommets n'existent pas, les créer
+                        if (!sommetDepartExistant) {
+                            sommetDepartExistant = new sommet(sommetDepart->getNom());
+                            // Ajouter le sommet à la liste de sommets
+                            sommets.push_back(sommetDepartExistant);
+                        }
+
+                        if (!sommetArriveeExistant) {
+                            sommetArriveeExistant = new sommet(sommetArrivee->getNom());
+                            // Ajouter le sommet à la liste de sommets
+                            sommets.push_back(sommetArriveeExistant);
+                        }
+
+                        // Créer la nouvelle arête et l'ajouter à la liste d'arêtes
+                        arete nouvelleArete(sommetDepartExistant, sommetArriveeExistant, valeur);
+                        aretes.push_back(nouvelleArete);
+                    }
+                }
+            }
+        }
+        cout << endl; // Ajoutez un retour à la ligne après chaque ligne de la matrice de coûts
     }
 }
 
@@ -120,6 +207,20 @@ void affichagegraphe::dessinerGraphe(QGraphicsScene* scene) {
         qreal xArrivee = centre.x() + rayon * cos(2 * M_PI * std::distance(sommets.begin(), std::find(sommets.begin(), sommets.end(), arrivee)) / sommets.size());
         qreal yArrivee = centre.y() + rayon * sin(2 * M_PI * std::distance(sommets.begin(), std::find(sommets.begin(), sommets.end(), arrivee)) / sommets.size());
 
+        // Si l'arête a son opposé, ajouter un décalage à l'angle
+        bool arreteInverse = false;
+        for (const auto& reverseArete : aretes) {
+            if (reverseArete.getDepart()->getNom() == arrivee->getNom() && reverseArete.getArrivee()->getNom() == depart->getNom()) {
+                arreteInverse = true;
+                break;
+            }
+        }
+        if (arreteInverse) {
+            qreal angle = atan2(yDepart - yArrivee, xDepart - xArrivee) * 180 / M_PI;
+            xArrivee += 20 * cos(angle * M_PI / 180);
+            yArrivee += 20 * sin(angle * M_PI / 180);
+        }
+
         // Créer un chemin
         QPainterPath chemin;
         chemin.moveTo(xDepart, yDepart); // Déplacer le point de départ du chemin
@@ -140,28 +241,48 @@ void affichagegraphe::dessinerGraphe(QGraphicsScene* scene) {
         qreal xArrow = xArrivee - 25 * cos(angle * M_PI / 180);
         qreal yArrow = yArrivee - 25 * sin(angle * M_PI / 180);
 
-        if (oriente) {
-            // Créer un élément de flèche
-            QGraphicsPolygonItem* arrowItem = new QGraphicsPolygonItem(QPolygonF() << QPointF(0, -2.5) << QPointF(10, 0) << QPointF(0, 2.5), nullptr);
-            arrowItem->setRotation(angle); // Faire pivoter la flèche
-            arrowItem->setPos(xArrow, yArrow); // Positionner la flèche juste avant l'extrémité de la droite
+        if (value)
+        {
+            if (oriente) {
+                // Créer un élément de flèche
+                QGraphicsPolygonItem* arrowItem = new QGraphicsPolygonItem(QPolygonF() << QPointF(0, -2.5) << QPointF(10, 0) << QPointF(0, 2.5), nullptr);
+                arrowItem->setRotation(angle); // Faire pivoter la flèche
+                arrowItem->setPos(xArrow, yArrow); // Positionner la flèche juste avant l'extrémité de la droite
 
-            arrowItem->setBrush(Qt::black);
+                arrowItem->setBrush(Qt::black);
 
-            // Dessiner la flèche
-            scene->addItem(arrowItem);
+                // Dessiner la flèche
+                scene->addItem(arrowItem);
+
+                // Placer le texte près de la flèche
+                qreal dx = xArrivee - xDepart;
+                qreal dy = yArrivee - yDepart;
+                qreal distance = sqrt(dx * dx + dy * dy);
+
+                // Ajuster la position du texte en fonction de la direction de la flèche
+                qreal offset = 20; // Décalage par rapport à la flèche
+                qreal xText = xArrivee - offset * cos(angle * M_PI / 180);
+                qreal yText = yArrivee - offset * sin(angle * M_PI / 180);
+
+                QGraphicsTextItem* poidsItem = scene->addText(QString::number(arete.getValeur()));
+                poidsItem->setPos(xText, yText);
+                scene->addItem(poidsItem);
+            } else {
+                // Si non orienté, placer le texte au milieu de l'arête
+                qreal dx = xArrivee - xDepart;
+                qreal dy = yArrivee - yDepart;
+                qreal distance = sqrt(dx * dx + dy * dy);
+                qreal segmentLength = distance / 10; // Diviser l'arête en 10 segments
+
+                qreal xPlacement = xDepart + 0.5 * dx;
+                qreal yPlacement = yDepart + 0.5 * dy;
+
+                // Ajouter le texte de l'arête
+                QGraphicsTextItem* poidsItem = scene->addText(QString::number(arete.getValeur()));
+                poidsItem->setPos(xPlacement, yPlacement);
+                scene->addItem(poidsItem);
+            }
         }
-
-        if (value) {
-            qreal xMilieu = (xDepart + xArrivee) / 2;
-            qreal yMilieu = (yDepart + yArrivee) / 2;
-
-            QGraphicsTextItem* poidsItem = scene->addText(QString::number(arete.getValeur()));
-            poidsItem->setPos(xMilieu, yMilieu);
-
-            scene->addItem(poidsItem);
-        }
-
     }
 }
 
@@ -205,7 +326,7 @@ void affichagegraphe::afficher() {
     }
 }
 
-graphe affichagegraphe::creerGraphe() {
+const graphe& affichagegraphe::creerGraphe() {
     // Initialiser les vecteurs fs et aps
     std::vector<int> fs;
     std::vector<int> aps;
@@ -255,10 +376,19 @@ graphe affichagegraphe::creerGraphe() {
 
     fs.insert(fs.begin(), fs.size());
 
-    // Créez le graphe avec les vecteurs fs et aps
-    graphe nouveauGraphe(fs, aps);
+    // Créer une instance de la classe de graphe appropriée en fonction des cases à cocher
+    graphe* nouveauGraphe = nullptr;
 
-    //nouveauGraphe.afficher();
+    if (!oriente && !value) {
+        nouveauGraphe = new grapheNoNv(fs, aps);
+    } else if (oriente && !value) {
+        nouveauGraphe = new grapheOnV(fs, aps);
+    } else if (!oriente && value) {
+        nouveauGraphe = new grapheVnO(fs, aps);
+    } else if (oriente && value) {
+        nouveauGraphe = new grapheOV(fs, aps);
+    }
 
-    return nouveauGraphe;
+    // Retourner la référence à l'instance de graphe créée
+    return *nouveauGraphe;
 }

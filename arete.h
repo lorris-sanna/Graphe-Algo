@@ -10,6 +10,7 @@ class arete
         sommet* getDepart() const;
         sommet* getArrivee() const;
         int getValeur() const;
+        bool aInverse(const arete& autre) const; // Méthode pour vérifier si l'arête a son inverse
 
     private:
         sommet* depart;

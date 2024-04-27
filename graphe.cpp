@@ -3,9 +3,25 @@
 graphe::graphe(vector<int> &fs,vector<int> &aps): d_fs{fs}, d_aps{aps}
 {}
 
-int graphe::nbSommet() const
+graphe::graphe(): d_fs{}, d_aps{}
+{}
+
+int graphe::nbSommets() const
 {
     return d_aps[0];
+}
+
+int graphe::nbAretes() const
+{
+    int nbAretes = 0;
+    // Parcourir le vecteur d_fs à partir de l'indice 1
+    for (size_t i = 1; i < d_fs.size(); ++i) {
+        // Si l'élément est différent de zéro, incrémenter le compteur
+        if (d_fs[i] != 0) {
+            nbAretes++;
+        }
+    }
+    return nbAretes;
 }
 
 vector<int> graphe::getFS() const
@@ -18,9 +34,86 @@ vector<int> graphe::getAPS() const
     return d_aps;
 }
 
+vector<vector<int>> graphe::getMAT() const
+{
+    return d_mat;
+}
+
+void graphe::setFS(vector<int> fs)
+{
+    d_fs = fs;
+}
+
+void graphe::setAPS(vector<int> aps)
+{
+    d_aps = aps;
+}
+
+void graphe::setMAT(vector<vector<int>> mat)
+{
+    d_mat = mat;
+}
+
+vector<sommet> graphe::getSommets() const
+{
+    std::vector<sommet> listeSommets;
+    std::vector<sommet*> sommetsExistants;
+
+    // Parcourir les arêtes pour extraire les sommets uniques
+    for (const auto& arete : getAretes()) {
+        sommet* depart = arete.getDepart();
+        sommet* arrivee = arete.getArrivee();
+
+        // Vérifier si le sommet de départ est déjà dans la liste
+        auto it_depart = std::find_if(sommetsExistants.begin(), sommetsExistants.end(), [depart](const sommet* s) {
+            return s->getNom() == depart->getNom();
+        });
+
+        if (it_depart == sommetsExistants.end()) {
+            listeSommets.push_back(*depart); // Ajouter le sommet de départ à la liste
+            sommetsExistants.push_back(depart); // Ajouter le sommet à la liste des sommets existants
+        }
+
+        // Vérifier si le sommet d'arrivée est déjà dans la liste
+        auto it_arrivee = std::find_if(sommetsExistants.begin(), sommetsExistants.end(), [arrivee](const sommet* s) {
+            return s->getNom() == arrivee->getNom();
+        });
+
+        if (it_arrivee == sommetsExistants.end()) {
+            listeSommets.push_back(*arrivee); // Ajouter le sommet d'arrivée à la liste
+            sommetsExistants.push_back(arrivee); // Ajouter le sommet à la liste des sommets existants
+        }
+    }
+
+    return listeSommets;
+}
+
+vector<arete> graphe::getAretes() const
+{
+    vector<arete> listeAretes;
+
+    int nbSommets = this->nbSommets();
+
+    // Parcourir les sommets et les arêtes pour créer les objets arete
+    for (int i = 1; i <= nbSommets; ++i) {
+        int indice_fs = d_aps[i]; // Indice de départ des successeurs du sommet i dans fs
+        int successeur = d_fs[indice_fs]; // Premier successeur du sommet i
+        while (successeur != 0) {
+            sommet* sommetDepart = new sommet(QString::number(i)); // Créer un sommet de départ
+            sommet* sommetArrivee = new sommet(QString::number(successeur)); // Créer un sommet d'arrivée
+            arete nouvelleArete(sommetDepart, sommetArrivee); // Créer une nouvelle arete
+            listeAretes.push_back(nouvelleArete); // Ajouter l'arete à la liste
+            indice_fs++;
+            successeur = d_fs[indice_fs]; // Successeur suivant
+        }
+    }
+
+    return listeAretes;
+}
+
 vector<vector<int>> graphe::distance() const
 {
-    int nbSommet = this->nbSommet();
+    int nbSommet = this->nbSommets();
     //Matrice des distances a return
     vector<vector<int>> dist(nbSommet+1, vector<int>(nbSommet+1));
 
@@ -66,58 +159,59 @@ vector<vector<int>> graphe::distance() const
     }
 }
 
-void graphe::fs_aps2adj(vector<int> aps, vector<int> fs, vector<vector<int>> &a) {
-    int n = aps[0];
-    int m = fs[0];
-    a.resize(n + 1); // Redimensionner a pour contenir n+1 vecteurs
+void graphe::fs_aps2adj(vector<int> aps, vector<int> fs, vector<vector<int>> &matAdj)
+{
+    int ns = aps[0]; //nombre de sommets
+    int na = fs[0]-ns; //nombre d'aretes
 
-    a[0].resize(2); // Redimensionner le premier vecteur pour contenir 2 éléments
-    a[0][0] = n;
-    a[0][1] = m;
+    matAdj.resize(ns+1);
 
-    for (int i = 1; i < n; i++) {
-        int nbs = aps[i + 1] - aps[i] - 1;
-        a[i].resize(nbs + 1); // Redimensionner le i-ème vecteur pour contenir nbs + 1 éléments
-        a[i][0] = nbs;
-        for (int j = 1; fs[aps[i] + j - 1] != 0; j++)
-            a[i][j] = fs[aps[i] + j - 1];
+    for(int i = 0; i < matAdj.size(); ++i)
+    {
+        matAdj[i].resize(ns+1);
     }
 
-    int nbs = fs[0] - aps[n];
-    a[n].resize(nbs + 1); // Redimensionner le dernier vecteur pour contenir nbs + 1 éléments
-    a[n][0] = nbs;
-    for (int j = 1; fs[aps[n] + j - 1] != 0; j++)
-        a[n][j] = fs[aps[n] + j - 1];
+    matAdj[0][0] = ns; //nombre de sommets
+    matAdj[0][1] = na; //nombre d'aretes
+
+    for (int i = 1; i <= ns; i++)
+    {
+        int indice_fs = aps[i];
+        while(fs[indice_fs] != 0)
+        {
+            matAdj[i][fs[indice_fs]] = 1;
+            indice_fs++;
+        }
+    }
 }
 
-void adj2fs_aps(const vector<vector<int>> a, vector<int> &fs, vector<int> &aps) {
-    int n = a[0][0];
-    int m = a[0][1];
+void graphe::adj2fs_aps(const vector<vector<int>> matAdj, vector<int> &fs, vector<int>& aps)
+{
+    int ns = matAdj[0][0];
+    int na = matAdj[0][1];
 
-    fs.resize(n+1);
-    aps.resize(n+1);
+    aps.resize(ns + 1);
+    fs.resize(ns + na + 1);
+    aps[0] = ns;
+    fs[0] = na + ns;
 
-    fs[0] = n+m;
-    aps[0] = n;
-
-    int i = 1;
-    for (int lig = 1; lig <= n; lig++) {
-        aps[lig] = i;
-        for (int col = 1; col <= n; col++) {
-            if (a[lig][col] == 1) {
-                fs[i] = col;
-                i++;
+    int indice_fs = 1;
+    for (int i = 1; i <= ns; ++i)
+    {
+        aps[i] = indice_fs;
+        for (int j = 1; j <= ns; ++j)
+        {
+            if (matAdj[i][j] == 1)
+            {
+                fs[indice_fs++] = j;
             }
         }
-        fs[i] = 0;
-        i++;
+        fs[indice_fs++] = 0;
     }
 }
 
-QString graphe::adjToString(const std::vector<std::vector<int>>& a) const {
-}
-
-QString graphe::fsToString() const {
+QString graphe::fsToString() const
+{
     QString resultat;
 
     // Conversion du vecteur d_fs en chaîne de caractères
@@ -131,7 +225,8 @@ QString graphe::fsToString() const {
     return resultat;
 }
 
-QString graphe::apsToString() const {
+QString graphe::apsToString() const
+{
     QString resultat;
 
     // Conversion du vecteur d_aps en chaîne de caractères
