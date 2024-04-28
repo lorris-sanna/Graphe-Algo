@@ -35,6 +35,7 @@ class affichagegraphe
         const graphe& creerGraphe();
         void ajouterArete(sommet* nomSommetDepart, sommet* nomSommetArrivee, int valeur = 0);
         void setAretes(vector<arete> aretes);
+        void matAdj2Aretes(vector<vector<int>> matAdj);
         void matCout2Aretes(vector<vector<int>> matCout);
         void dessinerGraphe(QGraphicsScene* scene);
         void reset();

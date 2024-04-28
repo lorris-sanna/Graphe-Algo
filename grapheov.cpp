@@ -9,44 +9,58 @@ grapheOV::grapheOV(vector<int>& fs, vector<int>& aps): graphe(fs,aps)
 grapheOV::grapheOV()
 {}
 
-/*bool grapheOV::estOriente() const
-{
-    return true;
+void grapheOV::dijkstra(const vector<int>& fs, const vector<int>& aps, const vector<vector<int>>& p, int s, vector<int>& d, vector<int>& pr) {
+    int n = aps[0]; // nombre de sommets
+    int m = fs[0];  // taille de fs
+    const int MAXPOIDS = INT_MAX; // poids maximum inatteignable
+
+    d.resize(n + 1, MAXPOIDS);
+    pr.resize(n + 1, -1);
+    vector<int> inS(n + 1, 1); //pour les sommets qui restent à traiter
+    // Initialisation des tableaux d, pr, et inS
+    for (int i = 1; i <= n; i++) {
+        d[i] = p[s][i];
+        pr[i] = s;
+    }
+    d[s] = 0;
+    pr[s] = s;
+    inS[s] = 0; //on connait déjà le sommet s
+
+    int ind = n - 1; //le sommet s est déjà traité
+
+    while (ind > 0) {
+        // recherche du sommet le plus proche de s
+        int m = MAXPOIDS;
+        int j = -1;
+        for (int i = 1; i <= n; i++) {
+            if (inS[i] && d[i] < m) {
+                m = d[i];
+                j = i;
+            }
+        }
+
+        if (m == MAXPOIDS) break; // aucun noeud accessible depuis s
+
+        inS[j] = 0;
+        ind--;
+
+        // traitement des successeurs de j
+        for (int k = aps[j]; fs[k] != 0; k++) {
+            int v = d[j] + p[j][fs[k]];
+            if (inS[fs[k]] && v < d[fs[k]]) {
+                d[fs[k]] = v;
+                pr[fs[k]] = j;
+            }
+        }
+    }
 }
 
-bool grapheOV::estValue() const
-{
-    return true;
-}
-
-void grapheOV::setOriente(bool o)
-{
-    oriente = o;
-}
-
-void grapheOV::setValue(bool v)
-{
-    value = v;
-}*/
-
-void grapheOV::dantzig(vector<vector<int>>& c, vector<arete>& aretes)
+void grapheOV::dantzig(vector<vector<int>>& c)
 {
     int x;
 
-    vector<int> sommetsNonAjoutes;
-    for (const auto& arete : aretes) {
-        int depart = arete.getDepart()->getNom().toInt();
-        int arrivee = arete.getArrivee()->getNom().toInt();
-        if (find(sommetsNonAjoutes.begin(), sommetsNonAjoutes.end(), depart) == sommetsNonAjoutes.end()) {
-            sommetsNonAjoutes.push_back(depart);
-        }
-        if (find(sommetsNonAjoutes.begin(), sommetsNonAjoutes.end(), arrivee) == sommetsNonAjoutes.end()) {
-            sommetsNonAjoutes.push_back(arrivee);
-        }
-    }
-
     // Récupérer le nombre de sommets dans le graphe
-    int n = sommetsNonAjoutes.size();
+    int n = c[0][0];
 
     for (int k = 0; k < n; ++k) {
         for (int i = 0; i < n; ++i) {
@@ -59,14 +73,29 @@ void grapheOV::dantzig(vector<vector<int>>& c, vector<arete>& aretes)
     }
 }
 
+void grapheOV::afficherVecteur(const std::vector<int>& vecteur) {
+    std::cout << "Contenu du vecteur : ";
+    for (int element : vecteur) {
+        std::cout << element << " ";
+    }
+    std::cout << std::endl;
+}
+
 vector<vector<int>> grapheOV::matriceCouts(graphe& G, vector<arete> aretes) {
     int ns = G.nbSommets(); //nombre de sommets
     int na = G.nbAretes(); //nombre d'aretes
 
-    const int INFINI = std::numeric_limits<int>::max(); // Constante pour représenter l'infini
+    const int MAXPOIDS = INT_MAX;
 
     // Initialisation de matCout avec la taille correcte
-    vector<vector<int>> matCout(ns + 1, vector<int>(ns + 1, INFINI));
+    vector<vector<int>> matCout;
+
+    matCout.resize(ns+1);
+
+    for(int i = 0; i < matCout.size(); ++i)
+    {
+        matCout[i].resize(ns+1, MAXPOIDS);
+    }
 
     matCout[0][0] = ns; //nombre de sommets
     matCout[0][1] = na; //nombre d'arêtes
@@ -102,14 +131,14 @@ void grapheOV::ecrireMatDansUnFichier(const vector<vector<int>>& matCout, const 
         cout << "Fichier '" << nomFichierOUT << "' ouvert avec succès." << endl;
     }
 
-    const int INFINI = std::numeric_limits<int>::max(); // Constante pour représenter l'infini
+    const int MAXPOIDS = INT_MAX;
 
     if (!matCout.empty() && matCout[0].size() >= 2) {
         fOUT << matCout[0][0] << " " << matCout[0][1] << endl;
         for(int i = 1; i < matCout.size(); ++i) {
             for(int j = 1; j < matCout[i].size(); ++j) {
-                if (matCout[i][j] == INFINI) {
-                    fOUT << "∞";
+                if (matCout[i][j] == MAXPOIDS) {
+                    fOUT << "MAXPOIDS";
                 } else {
                     fOUT << matCout[i][j];
                 }
@@ -141,24 +170,38 @@ vector<vector<int>> grapheOV::lireMatDepuisFichier(const string& nomFichierIN) {
         return {};
     }
     cout << "Lecture du fichier en cours..." << endl;
-    int ns, na; //nombre de sommets, nombre d'aretes
-    fIN >> ns >> na; //première valeur = nb sommets
+    int ns, na; // nombre de sommets, nombre d'arêtes
+    fIN >> ns >> na; // première valeur = nb sommets
 
-    vector<vector<int>> matrice(ns, vector<int>(ns));
+    int nb_col = ns + 1; // pour éviter de recalculer
+
+    // Matrice d'adjacence pour construire le graphe
+    vector<vector<int>> adjTmp(nb_col, vector<int>(nb_col, 0));
+
+    // Initialisation de la première ligne et colonne à zéro
+    for (int i = 0; i < nb_col; ++i) {
+        adjTmp[0][i] = 0; // Première ligne
+        adjTmp[i][0] = 0; // Première colonne
+    }
+
+    adjTmp[0][0] = ns; // Utilisation de la case (0,0) pour le nombre de sommets
+    adjTmp[0][1] = na; // Case (0,1) pour le nombre d'arêtes
+
+     const int MAXPOIDS = INT_MAX;
 
     // Lecture de la matrice
-    for (int i = 0; i < ns; ++i) {
-        for (int j = 0; j < ns; ++j) {
+    for (int i = 1; i <= ns; ++i) {
+        for (int j = 1; j <= ns; ++j) {
             string valeur;
             fIN >> valeur;
-            if (valeur == "∞") {
-                matrice[i][j] = std::numeric_limits<int>::max();
+            if (valeur == "MAXPOIDS") {
+                adjTmp[i][j] = MAXPOIDS; // Remplacer "∞" par 0
             } else {
-                matrice[i][j] = stoi(valeur);
+                adjTmp[i][j] = stoi(valeur);
             }
         }
     }
 
     cout << "Lecture terminée." << endl;
-    return matrice;
+    return adjTmp;
 }

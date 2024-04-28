@@ -9,25 +9,117 @@ grapheNoNv::grapheNoNv(vector<int>& fs, vector<int>& aps): graphe(fs,aps)
 grapheNoNv::grapheNoNv()
 {}
 
-/*bool grapheNoNv::estOriente() const
+vector<int> grapheNoNv::codagePrufer(vector<vector<int>>& matAdj)
 {
-    return false;
+    int n = matAdj[0][0]; //nombre de sommets
+    int m = matAdj[0][1]; //nombre d'arcs
+
+    if(m != n-1)
+    {
+        cout << "le nombre d'aretes doit correspondre au nombre de sommets - 1";
+        return {};
+    }
+
+    // Vecteur pour stocker le codage de Prufer
+    vector<int> prf;
+    prf.push_back(n-2);
+
+    while (n > 2)
+    {
+        int v = -1; // Sommet feuille avec étiquette minimale
+        for (int i = 0; i < matAdj.size(); ++i) {
+            int degree = 0;
+            for (int j = 0; j < matAdj[i].size(); ++j) {
+                degree += matAdj[i][j];
+            }
+            if (degree == 1 && (v == -1 || i < v))
+                v = i;
+        }
+
+        // Recherche du seul voisin de v
+        int s = -1;
+        for (int j = 0; j < matAdj[v].size(); ++j) {
+            if (matAdj[v][j] == 1) {
+                s = j;
+                break;
+            }
+        }
+
+        // Ajout du voisin au codage de Prufer
+        prf.push_back(s);
+
+        // Suppression du sommet v et de l'arête (s, v) de la matrice d'adjacence
+        matAdj[v][s] = 0;
+        matAdj[s][v] = 0;
+
+        // Réduction du nombre de sommets
+        --n;
+    }
+
+    return prf;
 }
 
-bool grapheNoNv::estValue() const
+vector<vector<int>> grapheNoNv::decodagePrufer(vector<int>& prf)
 {
-    return false;
-}
+    //création d'une matrice d'adjacence vierge
+    vector<vector<int>> matAdj;
 
-void grapheNoNv::setOriente(bool o)
-{
-    oriente = o;
-}
+    matAdj.resize(prf.size()+2);
 
-void grapheNoNv::setValue(bool v)
-{
-    value = v;
-}*/
+    for(int i = 0; i < matAdj.size(); ++i)
+    {
+        matAdj[i].resize(prf.size()+2);
+    }
+
+    int m = prf[0], n = m+2;
+
+    vector<int> t;
+    //nombre total de sommets de l'arbre + 1
+    t.resize(n+1);
+
+
+    //comptage du nombre d'occurences des sommets dans le code de Prufer
+    for (int i = 1; i <= m; i++)
+    {
+        t[prf[i]]++;
+    }
+
+    //recherche du j premier élément non utilisé pour chaque i de la séquence de Prufer
+    for (int i = 1; i <= m; i++)
+    {
+        int j = 1;
+        while(t[j] != 0)
+        {
+            ++j;
+        }
+        //on marque l'élément comme utilisé et on supprime l'occurence de i
+        t[prf[i]]--;
+        t[j] = -1;
+        //création du lien dans la matrice d'adjacence
+        matAdj[prf[i]][j] = 1;
+        matAdj[j][prf[i]] = 1;
+    }
+
+    //A la fin il reste 2 sommets qu'on relie
+    //les autres sont à "-1"
+    vector<int> ds;
+
+    for (int i = 1; i <= n; i++)
+    {
+        if (t[i] == 0)
+        {
+            ds.push_back(i);
+        }
+    }
+    //création du lien dans la matrice d'adjacence
+    matAdj[ds[0]][ds[1]] = 1;
+    matAdj[ds[1]][ds[0]] = 1;
+
+    matAdj[0][0] = n;
+    matAdj[0][1] = n - 1;
+
+    return matAdj;
+}
 
 vector<vector<int>> grapheNoNv::matriceCouts(graphe& G, vector<arete> aretes) {
     return std::vector<std::vector<int>>();

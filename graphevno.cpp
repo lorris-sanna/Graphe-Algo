@@ -9,26 +9,6 @@ grapheVnO::grapheVnO(vector<int> &fs, vector<int> &aps): graphe{fs,aps}
 grapheVnO::grapheVnO()
 {}
 
-/*bool grapheVnO::estOriente() const
-{
-    return false;
-}
-
-bool grapheVnO::estValue() const
-{
-    return true;
-}
-
-void grapheVnO::setOriente(bool o)
-{
-    oriente = o;
-}
-
-void grapheVnO::setValue(bool v)
-{
-    value = v;
-}*/
-
 void grapheVnO::fusion(int s, int t, vector<int>& Nb)
 {
     int cs = cfc[s];
@@ -212,14 +192,14 @@ void grapheVnO::ecrireMatDansUnFichier(const vector<vector<int>>& matCout, const
         cout << "Fichier '" << nomFichierOUT << "' ouvert avec succès." << endl;
     }
 
-    const int INFINI = std::numeric_limits<int>::max(); // Constante pour représenter l'infini
+    const int MAXPOIDS = INT_MAX;
 
     if (!matCout.empty() && matCout[0].size() >= 2) {
         fOUT << matCout[0][0] << " " << matCout[0][1] << endl;
         for(int i = 1; i < matCout.size(); ++i) {
             for(int j = 1; j < matCout[i].size(); ++j) {
-                if (matCout[i][j] == INFINI) {
-                    fOUT << "∞";
+                if (matCout[i][j] == MAXPOIDS) {
+                    fOUT << "MAXPOIDS";
                 } else {
                     fOUT << matCout[i][j];
                 }
@@ -238,7 +218,7 @@ void grapheVnO::ecrireMatDansUnFichier(const vector<vector<int>>& matCout, const
     }
 
     // Indique le type de graphe
-    fOUT << "0" << endl;
+    fOUT << "1" << endl;
     fOUT << "1" << endl;
 
     fOUT.close();
@@ -251,24 +231,38 @@ vector<vector<int>> grapheVnO::lireMatDepuisFichier(const string& nomFichierIN) 
         return {};
     }
     cout << "Lecture du fichier en cours..." << endl;
-    int ns, na; //nombre de sommets, nombre d'aretes
-    fIN >> ns >> na; //première valeur = nb sommets
+    int ns, na; // nombre de sommets, nombre d'arêtes
+    fIN >> ns >> na; // première valeur = nb sommets
 
-    vector<vector<int>> matrice(ns, vector<int>(ns));
+    int nb_col = ns + 1; // pour éviter de recalculer
+
+    // Matrice d'adjacence pour construire le graphe
+    vector<vector<int>> adjTmp(nb_col, vector<int>(nb_col, 0));
+
+    // Initialisation de la première ligne et colonne à zéro
+    for (int i = 0; i < nb_col; ++i) {
+        adjTmp[0][i] = 0; // Première ligne
+        adjTmp[i][0] = 0; // Première colonne
+    }
+
+    adjTmp[0][0] = ns; // Utilisation de la case (0,0) pour le nombre de sommets
+    adjTmp[0][1] = na; // Case (0,1) pour le nombre d'arêtes
+
+    const int MAXPOIDS = INT_MAX;
 
     // Lecture de la matrice
-    for (int i = 0; i < ns; ++i) {
-        for (int j = 0; j < ns; ++j) {
+    for (int i = 1; i <= ns; ++i) {
+        for (int j = 1; j <= ns; ++j) {
             string valeur;
             fIN >> valeur;
-            if (valeur == "∞") {
-                matrice[i][j] = std::numeric_limits<int>::max();
+            if (valeur == "MAXPOIDS") {
+                adjTmp[i][j] = MAXPOIDS; // Remplacer "∞" par 0
             } else {
-                matrice[i][j] = stoi(valeur);
+                adjTmp[i][j] = stoi(valeur);
             }
         }
     }
 
     cout << "Lecture terminée." << endl;
-    return matrice;
+    return adjTmp;
 }

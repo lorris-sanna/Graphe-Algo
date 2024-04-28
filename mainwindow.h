@@ -63,6 +63,58 @@ private slots:
 
     void on_btnRetourDantzig_2_clicked();
 
+    void on_btnDistances_clicked();
+
+    void on_btnRetourDistance_clicked();
+
+    void on_btnExecDistance_clicked();
+
+    void on_btnRetourDistance2_clicked();
+
+    void on_btnRang_clicked();
+
+    void on_btnRetourRang_clicked();
+
+    void on_btnExecRang_clicked();
+
+    void on_btnTarjan_clicked();
+
+    void on_btnRetourTarjan_clicked();
+
+    void on_btnExecTarjan_clicked();
+
+    void on_btnPrufer_clicked();
+
+    void on_btnRetourDistance_2_clicked();
+
+    void on_btnCodagePrufer_clicked();
+
+    void on_btnRetourCodagePrufer_clicked();
+
+    void on_btnExecCodagePrufer_clicked();
+
+    void on_btnDecodagePrufer_clicked();
+
+    void on_btnRetourCodagePrufer_2_clicked();
+
+    void on_btnDecodageGrapheCourant_clicked();
+
+    void on_btnDecodageTableau_clicked();
+
+    void on_btnRetourDecodagePruferGrapheCourant_clicked();
+
+    void on_btnExecDecodagePruferGrapheCourant_clicked();
+
+    void on_btnRetourDecodagePruferTableau_clicked();
+
+    void on_btnExecDecodagePruferTableau_clicked();
+
+    void on_btnDijkstra_clicked();
+
+    void on_btnRetourDijkstra_clicked();
+
+    void on_btnExecDijkstra_clicked();
+
 private:
     Ui::MainWindow *ui;
     class affichagegraphe* affichagegraphe;

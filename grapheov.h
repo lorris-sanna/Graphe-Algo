@@ -14,12 +14,9 @@ class grapheOV : public graphe
         grapheOV(vector<int>& fs, vector<int>& aps);
         grapheOV();
 
-        /*bool estOriente() const override;
-        bool estValue() const override;
-        void setOriente(bool o) override;
-        void setValue(bool o) override;*/
-
-        void dantzig(vector<vector<int>>& c, vector<arete>& aretes);
+        void dijkstra(const vector<int>& fs, const vector<int>& aps, const vector<vector<int>>& p, int s, vector<int>& d, vector<int>& pr);
+        void dantzig(vector<vector<int>>& c);
+        void afficherVecteur(const std::vector<int>& vecteur);
 
         vector<vector<int>> matriceCouts(graphe& G, vector<arete> aretes) override;
         void ecrireMatDansUnFichier(const vector<vector<int>>& matCout, const std::string& nomFichierOUT) override;

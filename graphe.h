@@ -37,9 +37,10 @@ class graphe
         void setFS(vector<int> fs);
         void setAPS(vector<int> fs);
         void setMAT(vector<vector<int>> mat);
-        vector<vector<int>> distance() const;
+        vector<vector<int>> matriceDistance() const;
         void fs_aps2adj(vector<int> aps, vector<int> fs, vector<vector<int>> &matAdj);
         void adj2fs_aps(const vector<vector<int>> matAdj, vector<int> &fs, vector<int> &aps);
+        void couts2fs_aps(const vector<vector<int>>& matCout, vector<int>& fs, vector<int>& aps);
         virtual vector<vector<int>> matriceCouts(graphe& G, vector<arete> aretes) = 0;
         QString fsToString() const;
         QString apsToString() const;

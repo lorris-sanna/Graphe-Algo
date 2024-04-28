@@ -131,7 +131,7 @@ vector<arete> graphe::getAretes() const
     return listeAretes;
 }
 
-vector<vector<int>> graphe::distance() const
+vector<vector<int>> graphe::matriceDistance() const
 {
     int nbSommet = this->nbSommets();
     //Matrice des distances a return
@@ -149,35 +149,60 @@ vector<vector<int>> graphe::distance() const
                 dist[i][j] = -1;
         }
     }
-
     //Remplir la matrice des distances
-    int j;
-    int compteurDist = 0;
+    int j,k;
+    int distance;
+    vector<int> file;
+    int debut,fin;
     for(int i = 1 ; i <= nbSommet ; i++ )
     {
-        //fil d'attente
-        vector<int> fil;
-        fil[0] = i;
-        int rangFil = 0;
-        int finFil = 1;
+        distance = 1;
         j = d_aps[i];
-        //remplir fil et rez avec les sommets adjacents
-        while(rangFil < finFil)
+        file.clear();
+        file.push_back(0);
+        debut = 0;
+        fin = 1;
+        k = 0;
+
+        //enregistrement des sommets avec une distance de 1
+        while(d_fs[j+k] != 0)
         {
-            while(d_fs[fil[rangFil]] != 0)
+            dist[i][d_fs[j+k]] = distance;
+            file.push_back(d_fs[j+k]);
+            k++;
+            fin++;
+        }
+
+        //enregistrement des sommets avec une distance > 1
+        while(debut < fin)
+        {
+            if( file[debut] == 0)
             {
-                if(dist[i][d_fs[j]] == -1)
+                distance++;
+                file.push_back(0);
+            }
+            else
+            {
+                j = d_aps[file[debut]];
+                k = 0;
+                while(d_fs[j+k] != 0)
                 {
-                    fil.push_back(d_fs[j]);
-                    dist[i][d_fs[j]] = d_fs[j];
-                    j++;
+                    if(dist[i][d_fs[j+k]] == -1)
+                    {
+                        dist[i][d_fs[j+k]] = distance;
+                        file.push_back(d_fs[j+k]);
+                        fin++;
+                    }
+                    k++;
                 }
             }
-
+            debut++;
         }
-        return dist;
+
     }
+    return dist;
 }
+
 
 void graphe::fs_aps2adj(vector<int> aps, vector<int> fs, vector<vector<int>> &matAdj)
 {
@@ -222,6 +247,31 @@ void graphe::adj2fs_aps(const vector<vector<int>> matAdj, vector<int> &fs, vecto
         for (int j = 1; j <= ns; ++j)
         {
             if (matAdj[i][j] == 1)
+            {
+                fs[indice_fs++] = j;
+            }
+        }
+        fs[indice_fs++] = 0;
+    }
+}
+
+void graphe::couts2fs_aps(const vector<vector<int>>& matCout, vector<int>& fs, vector<int>& aps)
+{
+    int ns = matCout[0][0];
+    int na = matCout[0][1];
+
+    aps.resize(ns + 1);
+    fs.resize(ns + na + 1);
+    aps[0] = ns;
+    fs[0] = na + ns;
+
+    int indice_fs = 1;
+    for (int i = 1; i <= ns; ++i)
+    {
+        aps[i] = indice_fs;
+        for (int j = 1; j <= ns; ++j)
+        {
+            if (matCout[i][j] != INT_MAX && i != j)
             {
                 fs[indice_fs++] = j;
             }

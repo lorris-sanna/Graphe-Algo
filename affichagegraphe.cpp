@@ -81,6 +81,73 @@ void affichagegraphe::setAretes(vector<arete> aretes)
     this->aretes = aretes;
 }
 
+void affichagegraphe::matAdj2Aretes(vector<vector<int>> matAdj) {
+    // Parcourir la matrice d'adjacence
+    for (size_t i = 0; i < matAdj.size(); ++i) {
+        for (size_t j = 0; j < matAdj[i].size(); ++j) {
+            if (matAdj[i][j] == 1) // Si l'élément de la matrice est 1, cela signifie qu'il y a une arête entre les sommets i et j
+            {
+                // Obtenir le nom des sommets de départ et d'arrivée
+                QString nomSommetDepart = QString::number(i);
+                QString nomSommetArrivee = QString::number(j);
+
+                // Ajouter les sommets si nécessaire
+                ajouterSommets(nomSommetDepart, nomSommetArrivee);
+
+                // Obtenir les pointeurs vers les sommets de départ et d'arrivée
+                sommet* sommetDepart = trouverSommet(nomSommetDepart);
+                sommet* sommetArrivee = trouverSommet(nomSommetArrivee);
+
+                // Ajouter l'arête si les sommets sont valides
+                if (sommetDepart && sommetArrivee) {
+                    // Vérifier si une arête identique existe déjà
+                    bool arreteExistante = false;
+                    for (const auto& existingArete : aretes) {
+                        if (existingArete.getDepart()->getNom() == sommetDepart->getNom() && existingArete.getArrivee()->getNom() == sommetArrivee->getNom()) {
+                            arreteExistante = true;
+                            break;
+                        }
+                    }
+
+                    // Si aucune arête identique n'existe, ajouter la nouvelle arête
+                    if (!arreteExistante) {
+                        // Vérifier si les sommets existent déjà dans la liste de sommets
+                        sommet* sommetDepartExistant = nullptr;
+                        sommet* sommetArriveeExistant = nullptr;
+
+                        for (auto& s : sommets) {
+                            if (s->getNom() == sommetDepart->getNom()) {
+                                sommetDepartExistant = s;
+                            }
+                            if (s->getNom() == sommetArrivee->getNom()) {
+                                sommetArriveeExistant = s;
+                            }
+                        }
+
+                        // Si les sommets n'existent pas, les créer
+                        if (!sommetDepartExistant) {
+                            sommetDepartExistant = new sommet(sommetDepart->getNom());
+                            // Ajouter le sommet à la liste de sommets
+                            sommets.push_back(sommetDepartExistant);
+                        }
+
+                        if (!sommetArriveeExistant) {
+                            sommetArriveeExistant = new sommet(sommetArrivee->getNom());
+                            // Ajouter le sommet à la liste de sommets
+                            sommets.push_back(sommetArriveeExistant);
+                        }
+
+                        // Créer la nouvelle arête et l'ajouter à la liste d'arêtes
+                        arete nouvelleArete(sommetDepartExistant, sommetArriveeExistant, 1); // Par défaut, on peut mettre un poids de 1 pour une arête sans coût
+                        aretes.push_back(nouvelleArete);
+                    }
+                }
+            }
+        }
+        cout << endl; // Ajoutez un retour à la ligne après chaque ligne de la matrice d'adjacence
+    }
+}
+
 void affichagegraphe::matCout2Aretes(vector<vector<int>> matCout) {
     // Parcourir la matrice de coûts
     for (size_t i = 0; i < matCout.size(); ++i) {
@@ -241,19 +308,18 @@ void affichagegraphe::dessinerGraphe(QGraphicsScene* scene) {
         qreal xArrow = xArrivee - 25 * cos(angle * M_PI / 180);
         qreal yArrow = yArrivee - 25 * sin(angle * M_PI / 180);
 
-        if (value)
-        {
-            if (oriente) {
-                // Créer un élément de flèche
-                QGraphicsPolygonItem* arrowItem = new QGraphicsPolygonItem(QPolygonF() << QPointF(0, -2.5) << QPointF(10, 0) << QPointF(0, 2.5), nullptr);
-                arrowItem->setRotation(angle); // Faire pivoter la flèche
-                arrowItem->setPos(xArrow, yArrow); // Positionner la flèche juste avant l'extrémité de la droite
+        if (oriente) {
+            QGraphicsPolygonItem* arrowItem = new QGraphicsPolygonItem(QPolygonF() << QPointF(0, -2.5) << QPointF(10, 0) << QPointF(0, 2.5), nullptr);
+            arrowItem->setRotation(angle); // Faire pivoter la flèche
+            arrowItem->setPos(xArrow, yArrow); // Positionner la flèche juste avant l'extrémité de la droite
 
-                arrowItem->setBrush(Qt::black);
+            arrowItem->setBrush(Qt::black);
 
-                // Dessiner la flèche
-                scene->addItem(arrowItem);
+            // Dessiner la flèche
+            scene->addItem(arrowItem);
 
+            if (value)
+            {
                 // Placer le texte près de la flèche
                 qreal dx = xArrivee - xDepart;
                 qreal dy = yArrivee - yDepart;
@@ -267,7 +333,10 @@ void affichagegraphe::dessinerGraphe(QGraphicsScene* scene) {
                 QGraphicsTextItem* poidsItem = scene->addText(QString::number(arete.getValeur()));
                 poidsItem->setPos(xText, yText);
                 scene->addItem(poidsItem);
-            } else {
+            }
+        } else {
+            if (value)
+            {
                 // Si non orienté, placer le texte au milieu de l'arête
                 qreal dx = xArrivee - xDepart;
                 qreal dy = yArrivee - yDepart;

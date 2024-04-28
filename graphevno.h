@@ -14,11 +14,6 @@ class grapheVnO : public graphe
         grapheVnO(vector<int> &fs, vector<int> &aps);
         grapheVnO();
 
-        /*bool estOriente() const override;
-        bool estValue() const override;
-        void setOriente(bool o) override;
-        void setValue(bool o) override;*/
-
         void ajouterArete(vector<arete>& arete, sommet* depart, sommet* arrivee, int valeur);
         void fusion(int s, int t, vector<int>& nb);
         vector<arete> kruskal(grapheVnO& T, vector<arete>& aretes);
