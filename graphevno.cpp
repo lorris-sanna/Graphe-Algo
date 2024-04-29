@@ -218,7 +218,7 @@ void grapheVnO::ecrireMatDansUnFichier(const vector<vector<int>>& matCout, const
     }
 
     // Indique le type de graphe
-    fOUT << "1" << endl;
+    fOUT << "0" << endl;
     fOUT << "1" << endl;
 
     fOUT.close();

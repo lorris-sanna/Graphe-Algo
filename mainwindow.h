@@ -122,6 +122,10 @@ private slots:
 
     void on_btnExecOrdonnancement_clicked();
 
+    void on_btnGrapheReduit_clicked();
+
+    void on_btnRetourTarjan2_clicked();
+
 private:
     Ui::MainWindow *ui;
     class affichagegraphe* affichagegraphe;

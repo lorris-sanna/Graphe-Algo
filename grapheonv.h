@@ -22,8 +22,10 @@ class grapheOnV : public graphe
         vector<int> rang() const;
 
         // Tarjan
-        void dfsTarjan(int u, vector<int>& num, vector<int>& low, vector<bool>& onStack, stack<int>& path, vector<vector<int>>& scc, int& counter) const;
-        vector<vector<int>> tarjan() const;
+        vector<int> tarjan() const;
+        void traverseeTarjan(int &sommet, vector<bool> &visiter,vector<int>&num,vector<int> &low, stack<int> &pile, int &compteur, vector<int> &cfc,int &compteurcfc) const;
+        vector<vector<int>> composanteCFC() const;
+        void graphReduit(vector<int> &fsReduit, vector<int> &apsReduit) const;
 
         vector<vector<int>> matriceCouts(graphe& G, vector<arete> aretes) override;
         void ecrireMatDansUnFichier(const vector<vector<int>>& matCout, const std::string& nomFichierOUT) override;

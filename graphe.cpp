@@ -131,25 +131,32 @@ vector<arete> graphe::getAretes() const
     return listeAretes;
 }
 
+// Méthode pour calculer la matrice des distances entre les sommets du graphe.
 vector<vector<int>> graphe::matriceDistance() const
 {
+    // Récupération du nombre de sommets dans le graphe
     int nbSommet = this->nbSommets();
-    //Matrice des distances a return
+
+    // Initialisation de la matrice des distances à retourner
     vector<vector<int>> dist(nbSommet+1, vector<int>(nbSommet+1));
 
-    //initialisation de la matrice des distance avec des -1 et des 0 sur la diagonale
+    // Initialisation de la matrice des distances avec des -1 et des 0 sur la diagonale
     for(int i = 1 ; i <= nbSommet ; i++)
     {
+        // La première colonne de la matrice contient le nombre de sommets
         dist[i][0] = nbSommet;
+
+        // Initialisation de la diagonale à 0, sinon à -1
         for(int j = 1 ; j <= nbSommet ; j++)
         {
             if(i == j)
-                dist[i][j] = 0;
+                dist[i][j] = 0; // Distance entre un sommet et lui-même est 0
             else
-                dist[i][j] = -1;
+                dist[i][j] = -1; // Distance initiale entre deux sommets est -1 (infini)
         }
     }
-    //Remplir la matrice des distances
+
+    // Remplissage de la matrice des distances
     int j,k;
     int distance;
     vector<int> file;
@@ -157,40 +164,40 @@ vector<vector<int>> graphe::matriceDistance() const
     for(int i = 1 ; i <= nbSommet ; i++ )
     {
         distance = 1;
-        j = d_aps[i];
+        j = getAPS()[i];
         file.clear();
-        file.push_back(0);
+        file.push_back(0); // Marqueur de fin de niveau dans le parcours en largeur
         debut = 0;
         fin = 1;
         k = 0;
 
-        //enregistrement des sommets avec une distance de 1
-        while(d_fs[j+k] != 0)
+        // Enregistrement des sommets avec une distance de 1
+        while(getFS()[j+k] != 0)
         {
-            dist[i][d_fs[j+k]] = distance;
-            file.push_back(d_fs[j+k]);
+            dist[i][getFS()[j+k]] = distance;
+            file.push_back(getFS()[j+k]); // Ajout du sommet dans la file
             k++;
             fin++;
         }
 
-        //enregistrement des sommets avec une distance > 1
+        // Enregistrement des sommets avec une distance > 1
         while(debut < fin)
         {
             if( file[debut] == 0)
             {
                 distance++;
-                file.push_back(0);
+                file.push_back(0); // Marqueur de fin de niveau dans le parcours en largeur
             }
             else
             {
-                j = d_aps[file[debut]];
+                j = getAPS()[file[debut]];
                 k = 0;
-                while(d_fs[j+k] != 0)
+                while(getFS()[j+k] != 0)
                 {
-                    if(dist[i][d_fs[j+k]] == -1)
+                    if(dist[i][getFS()[j+k]] == -1)
                     {
-                        dist[i][d_fs[j+k]] = distance;
-                        file.push_back(d_fs[j+k]);
+                        dist[i][getFS()[j+k]] = distance;
+                        file.push_back(getFS()[j+k]); // Ajout du sommet dans la file
                         fin++;
                     }
                     k++;
@@ -198,10 +205,10 @@ vector<vector<int>> graphe::matriceDistance() const
             }
             debut++;
         }
-
     }
-    return dist;
+    return dist; // Retour de la matrice des distances calculée
 }
+
 
 
 void graphe::fs_aps2adj(vector<int> aps, vector<int> fs, vector<vector<int>> &matAdj)

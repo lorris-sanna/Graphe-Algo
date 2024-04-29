@@ -200,6 +200,8 @@ void MainWindow::on_btnTarjan_clicked()
     {
         ui->stackedWidget->setCurrentWidget(ui->pageTarjan);
 
+        ui->btnGrapheReduit->setVisible(false);
+
         affichagegraphe->matAdj2Aretes(grapheCourant->getMAT());
 
         QGraphicsScene* scene = new QGraphicsScene(this);
@@ -236,18 +238,93 @@ void MainWindow::on_btnRetourTarjan_clicked()
 void MainWindow::on_btnExecTarjan_clicked()
 {
     grapheOnV* grapheOnVCourant = dynamic_cast<grapheOnV*>(grapheCourant);
-    vector<vector<int>> tarj = grapheOnVCourant->tarjan();
+    vector<int> cfc = grapheOnVCourant->tarjan();
 
-    /*for (size_t i = 0; i < tarj.size(); ++i) {
-        std::cout << "Vecteur " << i << " : [";
-        for (size_t j = 0; j < tarj[i].size(); ++j) {
-            std::cout << tarj[i][j];
-            if (j != tarj[i].size() - 1) {
-                std::cout << ", ";
+    QString tarjanString = "Composantes fortement connexes :\n";
+
+    bool premiereComposante = true; // Utilisé pour éviter d'ajouter une virgule avant la première composante
+    for (int i = 1; i < cfc.size(); ++i) {
+        // Vérifier si la composante est non vide
+        bool composanteNonVide = false;
+        QString composante;
+        composante += "C" + QString::number(i) + ": {";
+        // Afficher les sommets de la composante fortement connexe
+        for (int sommet = 1; sommet < cfc.size(); ++sommet) {
+            if (cfc[sommet] == i) {
+                composante += QString::number(sommet) + ", ";
+                composanteNonVide = true;
             }
         }
-        std::cout << "] (taille = " << tarj[i].size() << ")" << std::endl;
-    }*/
+        // Si la composante est vide, ne pas l'afficher
+        if (!composanteNonVide) {
+            continue;
+        }
+        composante.chop(2); // Supprimer la virgule et l'espace après le dernier sommet
+        composante += "}";
+        if (!premiereComposante) {
+            tarjanString += ", ";
+        } else {
+            premiereComposante = false;
+        }
+        tarjanString += composante;
+    }
+
+    // Affichage de la chaîne de caractères dans le QLabel
+    ui->labelTarjanCfc->setText(tarjanString);
+    ui->labelTarjanCfc2->setText(tarjanString);
+
+    if (ui->labelTarjanCfc->text() != "")
+    {
+        ui->btnGrapheReduit->setVisible(true);
+    }
+}
+
+void MainWindow::on_btnGrapheReduit_clicked()
+{
+    ui->stackedWidget->setCurrentWidget(ui->pageTarjanGrapheReduit);
+
+    affichagegraphe->reset();
+
+    grapheOnV* grapheOnVCourant = dynamic_cast<grapheOnV*>(grapheCourant);
+    vector<int> cfc = grapheOnVCourant->tarjan();
+
+    vector<int> fsReduit, apsReduit;
+    vector<vector<int>> matAdj;
+
+    grapheOnVCourant->graphReduit(fsReduit, apsReduit);
+
+    grapheOnVCourant->fs_aps2adj(apsReduit, fsReduit, matAdj);
+
+    affichagegraphe->matAdj2Aretes(matAdj);
+
+
+
+    QGraphicsScene* scene = new QGraphicsScene(this);
+
+    affichagegraphe->setOriente(grapheCourant->estOriente());
+    affichagegraphe->setValue(grapheCourant->estValue());
+
+    vector<arete> listeAretes = affichagegraphe->getAretes();
+    std::cout << "Liste des aretes : " << std::endl;
+    for (const auto& arete : affichagegraphe->getAretes()) {
+        std::cout << arete.getDepart()->getNom().toInt() << " -> "
+                  << arete.getArrivee()->getNom().toInt() << " (valeur : "
+                  << arete.getValeur() << ")" << std::endl;
+    }
+
+    //Dessiner le graphe dans la scène
+    affichagegraphe->dessinerGraphe(scene);
+
+    //Configurer la vue avec la nouvelle scène
+    ui->graphicsViewTarjan2->setScene(scene);
+
+    //Ajuster la vue pour afficher toute la scène
+    ui->graphicsViewTarjan2->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+}
+
+void MainWindow::on_btnRetourTarjan2_clicked()
+{
+    ui->stackedWidget->setCurrentWidget(ui->pageTarjan);
 }
 
 //------------------------------------------------------------------ ORDONNANCEMENT

@@ -24,129 +24,231 @@ vector<int> grapheOnV::ddi()const
     return ddi;
 }
 
-//ASSERT : Il ne faut pas qu'un des sommets pointes sur lui meme
-vector<int> grapheOnV::rang()const
+// Méthode pour calculer le rang de chaque sommet du graphe.
+// ASSERT : Il ne faut pas qu'un des sommets pointe sur lui-même.
+vector<int> grapheOnV::rang() const
 {
-    vector<int> rang;
-    int taille = this->nbSommets();
-    //marquer tout les sommets par -1 = + l'infinis
-    vector<int> derDegInt = ddi();
-    vector<int> pile;
-    int debut = 0, fin = 0;
-    int niveauRang = 0;
+    vector<int> rang; // Vecteur pour stocker le rang de chaque sommet
+    int taille = this->nbSommets(); // Taille du graphe
+    vector<int> derDegInt = ddi(); // Vecteur pour stocker le degré entrant de chaque sommet
+    vector<int> pile; // Pile pour effectuer le parcours en largeur
+    int debut = 0, fin = 0; // Indices pour marquer le début et la fin de la file
+    int niveauRang = 0; // Niveau de rang initial
+    // Initialisation du vecteur de rang en marquant tous les sommets par -1, sauf le premier qui représente l'infini
     for(int i = 0 ; i <= taille ; i++)
     {
-        if(derDegInt[i] == 0 )
+        if(derDegInt[i] == 0)
         {
-            rang.push_back(niveauRang);
-            pile.push_back(i);
-            fin++;
+            rang.push_back(niveauRang); // Si le degré entrant est 0, attribuer le niveau de rang au sommet
+            pile.push_back(i); // Ajouter le sommet à la pile
+            fin++; // Incrémenter la fin de la file
         }
         else
-            rang.push_back(-1);
+            rang.push_back(-1); // Si le degré entrant est non nul, marquer le sommet par -1 (non attribué)
     }
-    pile.push_back(0);
-    niveauRang++;
-    int i,j;
+    pile.push_back(0); // Marquer la fin de la première étape de parcours
+    niveauRang++; // Incrémenter le niveau de rang
+    int i, j;
+    // Parcours en largeur pour calculer le rang de chaque sommet
     while(debut < fin)
     {
         if(pile[debut] == 0)
         {
-            pile.push_back(0);
-            niveauRang++;
-            debut++;
-            fin++;
+            pile.push_back(0); // Marquer la fin de chaque niveau de parcours
+            niveauRang++; // Incrémenter le niveau de rang
+            debut++; // Passer au prochain sommet dans la pile
+            fin++; // Incrémenter la fin de la file
         }
-        i = getAPS()[pile[debut]];
-        j=0;
-
-        while(getFS()[i+j] !=0)
+        i = getAPS()[pile[debut]]; // Accéder au premier successeur du sommet
+        j = 0;
+        // Parcourir tous les successeurs du sommet
+        while(getFS()[i + j] != 0)
         {
-            derDegInt[getFS()[i+j]]--;
-            if(derDegInt[getFS()[i+j]] == 0)
+            derDegInt[getFS()[i + j]]--; // Réduire le degré entrant du successeur
+            if(derDegInt[getFS()[i + j]] == 0)
             {
-                rang[getFS()[i+j]] = niveauRang;
-                pile.push_back(getFS()[i+j]);
-                fin++;
+                rang[getFS()[i + j]] = niveauRang; // Attribuer le niveau de rang au successeur si le degré entrant devient 0
+                pile.push_back(getFS()[i + j]); // Ajouter le successeur à la pile
+                fin++; // Incrémenter la fin de la file
             }
             j++;
         }
-        debut++;
+        debut++; // Passer au prochain sommet dans la pile
     }
-    rang[0] = this->nbSommets();
-
-    std::cout << "Pilch :\n";
-    for (int i = 0; i < pile.size(); ++i) {
-        std::cout << "Sommet " << i << " : " << pile[i] << std::endl;
-    }
-
-    return rang;
+    rang[0] = this->nbSommets(); // Attribuer le niveau de rang de l'infini au premier sommet
+    return rang; // Retourner le vecteur de rang
 }
 
-// Fonction pour effectuer le parcours en profondeur de Tarjan
-void grapheOnV::dfsTarjan(int u, vector<int>& num, vector<int>& low, vector<bool>& onStack, stack<int>& path, vector<vector<int>>& scc, int& counter) const {
-    // Marquer le sommet u comme découvert et lui attribuer un numéro de découverte et une valeur de basse
-    num[u] = low[u] = counter++;
-    // Ajouter le sommet u au chemin parcouru et le marquer comme étant dans la pile de parcours
-    path.push(u);
-    onStack[u] = true;
 
-    // Parcours des successeurs de u dans le graphe
-    for (int i = getAPS()[u]; i < (getAPS()[u+1])-1; ++i) {
-        int v = getFS()[i];
-        // Si le successeur v de u n'a pas encore été découvert
-        if (num[v] == -1) {
-            // Faire un parcours en profondeur récursif depuis v
-            dfsTarjan(v, num, low, onStack, path, scc, counter);
-            // Mettre à jour la valeur de basse de u avec la valeur de basse de v
-            low[u] = std::min(low[u], low[v]);
-        }
-        // Sinon, si v est dans la pile de parcours
-        else if (onStack[v]) {
-            // Mettre à jour la valeur de basse de u avec le numéro de découverte de v
-            low[u] = std::min(low[u], num[v]);
+// Méthode pour trouver les composantes fortement connexes du graphe en utilisant l'algorithme de Tarjan.
+vector<int> grapheOnV::tarjan() const
+{
+    int Taille = this->nbSommets() + 1; // Taille du vecteur pour stocker les composantes fortement connexes
+    vector<int> low(Taille, -1); // Vecteur pour stocker les valeurs low de chaque sommet
+    vector<bool> visiter(Taille, false); // Vecteur pour marquer les sommets visités
+    vector<int> num(Taille, -1); // Vecteur pour stocker les numéros de découverte des sommets
+    vector<int> cfc(Taille, 0); // Vecteur pour stocker les composantes fortement connexes
+    stack<int> pile; // Pile pour effectuer le parcours en profondeur
+    int compteur = 0; // Compteur pour les numéros de découverte
+    int compteurcfc = 1; // Compteur pour les composantes fortement connexes
+    // Parcourir tous les sommets du graphe
+    for(int sommet = 1 ; sommet < Taille ; sommet++)
+    {
+        if(num[sommet] == -1)
+        {
+            // Si le sommet n'a pas été visité, lancer le parcours en profondeur à partir de ce sommet
+            traverseeTarjan(sommet, visiter, num, low, pile, compteur, cfc, compteurcfc);
         }
     }
+    cfc[0] = compteurcfc - 1; // Stocker le nombre total de composantes fortement connexes dans la première case
+    return cfc; // Retourner le vecteur des composantes fortement connexes
+}
 
-    // Si u est racine d'une composante fortement connexe
-    if (num[u] == low[u]) {
+// Méthode récursive pour effectuer le parcours en profondeur et trouver les composantes fortement connexes.
+void grapheOnV::traverseeTarjan(int &sommet, vector<bool> &visiter,vector<int>&num,vector<int> &low, stack<int> &pile, int &compteur, vector<int> &cfc,int &compteurcfc) const
+{
+    compteur++; // Incrémenter le compteur de découverte
+    num[sommet] = compteur; // Attribuer le numéro de découverte au sommet
+    low[sommet]  = compteur; // Initialiser la valeur low du sommet
+    pile.push(sommet); // Empiler le sommet
+    visiter[sommet] = true; // Marquer le sommet comme visité
+    int successeur;
+    int i = getAPS()[sommet]; // Accéder au premier successeur du sommet
+    // Parcourir tous les successeurs du sommet
+    while (getFS()[i] != 0) {
+        successeur = getFS()[i];
+        if (num[successeur] == -1) {
+            // Si le successeur n'a pas été visité, poursuivre le parcours en profondeur depuis ce successeur
+            traverseeTarjan(successeur, visiter, num, low, pile, compteur, cfc, compteurcfc);
+            low[sommet] = std::min(low[sommet], low[successeur]); // Mettre à jour la valeur low du sommet
+        } else if (visiter[successeur]) {
+            // Si le successeur a été visité, mettre à jour la valeur low du sommet
+            low[sommet] = std::min(low[sommet], num[successeur]);
+        }
+        i++;
+    }
+    // Si le sommet est racine d'une composante fortement connexe
+    if (num[sommet] == low[sommet])
+    {
         // Créer une nouvelle composante fortement connexe temporaire
-        vector<int> sccTemp;
+        vector<int> cfcTemp;
+
         // Extraire tous les sommets de la pile de parcours jusqu'à u inclusivement
-        while (true) {
-            int v = path.top();
-            path.pop();
-            // Marquer v comme étant hors de la pile de parcours
-            onStack[v] = false;
-            // Ajouter v à la composante fortement connexe temporaire
-            sccTemp.push_back(v);
-            // Si u est atteint à nouveau, arrêter l'extraction
-            if (u == v) break;
-        }
+        do
+        {
+            successeur = pile.top();
+            pile.pop();
+            visiter[successeur] = false; // Marquer le sommet comme non visité
+            cfcTemp.push_back(successeur); // Ajouter le sommet à la composante fortement connexe temporaire
+        } while (sommet != successeur);
         // Ajouter la composante fortement connexe temporaire à la liste des composantes fortement connexes
-        scc.push_back(sccTemp);
-    }
-}
-
-// Méthode principale de l'algorithme de Tarjan pour trouver les composantes fortement connexes
-vector<vector<int>> grapheOnV::tarjan() const {
-    int V = nbSommets(); // Nombre de sommets
-    vector<int> num(V + 1, -1); // Numéro de découverte
-    vector<int> low(V + 1); // Valeur de basse
-    vector<bool> onStack(V + 1, false); // Indique si un sommet est dans la pile de parcours
-    stack<int> path; // Chemin parcouru
-    vector<vector<int>> scc; // Composantes fortement connexes
-    int counter = 0; // Compteur pour les numéros de découverte
-
-    // Parcours de tous les sommets du graphe à partir du sommet 1
-    for (int u = 1; u <= V; u++) { // Commencer à partir de 1
-        if (num[u] == -1) {
-            dfsTarjan(u, num, low, onStack, path, scc, counter);
+        for(unsigned long long i = 0 ; i < cfcTemp.size(); i++)
+        {
+            cfc[cfcTemp[i]] = compteurcfc;
         }
+        compteurcfc++; // Incrémenter le compteur de composantes fortement connexes
     }
-
-    return scc;
 }
+
+
+// Cette fonction identifie les composantes fortement connexes (CFC) du graphe
+// en utilisant l'algorithme de Tarjan. Elle retourne un vecteur de vecteurs
+// où chaque vecteur interne contient les sommets appartenant à une CFC.
+vector<vector<int>> grapheOnV::composanteCFC() const
+{
+    // Exécute l'algorithme de Tarjan pour trouver les CFC
+    vector<int> cfc = tarjan();
+
+    // Initialise un vecteur de vecteurs pour stocker les CFC
+    vector<vector<int>> composante(cfc[0] + 1, vector<int>());
+
+    // Récupère les sommets de chaque CFC
+    for (unsigned long long i = 1; i < cfc.size(); i++)
+    {
+        composante[cfc[i]].push_back(i);
+    }
+    // Ajoute le nombre total de CFC au début du vecteur
+    composante[0].push_back(cfc[0]);
+
+    return composante;
+}
+
+// Cette fonction construit le graphe réduit à partir du graphe d'origine.
+// Le graphe réduit est représenté par les vecteurs fsReduit et apsReduit.
+void grapheOnV::graphReduit(vector<int> &fsReduit, vector<int> &apsReduit) const
+{
+    // Exécute l'algorithme de Tarjan pour trouver les CFC
+    vector<int> cfc = tarjan();
+
+    // Initialise la taille du graphe réduit
+    int taille = cfc.size();
+
+    // Initialise un vecteur pour suivre les sommets déjà traités
+    vector<bool> dejaMis(taille);
+
+    // Initialise un compteur de successeurs
+    int k, successeur;
+
+    // Initialise une pile pour stocker les successeurs des CFC
+    stack<int> pileSuccesseur;
+
+    // Ajoute un sommet de fin à fsReduit et apsReduit
+    fsReduit.push_back(0);
+    apsReduit.push_back(cfc[0]);
+
+    // Parcours les CFC pour construire le graphe réduit
+    for (int i = 1; i <= cfc[0]; i++)
+    {
+        // Réinitialise le vecteur déjàMis pour chaque CFC
+        for (int j = 0; j < taille; j++)
+            dejaMis[j] = false;
+
+        // Parcours les sommets pour chaque CFC
+        for (int j = 1; j < taille; j++)
+        {
+            // Vérifie si le sommet appartient à la CFC actuelle
+            if (cfc[j] == i)
+            {
+                dejaMis[cfc[j]] = true;
+                k = 0;
+                successeur = getFS()[getAPS()[j] + k];
+
+                // Parcours les successeurs du sommet
+                while (successeur != 0)
+                {
+                    // Vérifie si le successeur appartient à une autre CFC
+                    if (dejaMis[cfc[successeur]] == false)
+                    {
+                        dejaMis[cfc[successeur]] = true;
+
+                        // Ajoute le successeur à la pile s'il appartient à une autre CFC
+                        if (cfc[successeur] != i)
+                        {
+                            pileSuccesseur.push(cfc[successeur]);
+                        }
+                    }
+                    k++;
+                    successeur = getFS()[getAPS()[j] + k];
+                }
+            }
+        }
+        // Met à jour apsReduit avec la taille de fsReduit
+        apsReduit.push_back(fsReduit.size());
+
+        // Transfère les successeurs de la pile à fsReduit
+        while (!pileSuccesseur.empty())
+        {
+            fsReduit.push_back(pileSuccesseur.top());
+            pileSuccesseur.pop();
+        }
+
+        // Ajoute un sommet de fin à fsReduit pour cette CFC
+        fsReduit.push_back(0);
+    }
+    // Met à jour la taille du vecteur fsReduit pour indiquer le dernier index
+    fsReduit[0] = fsReduit.size() - 1;
+}
+
 
 vector<vector<int>> grapheOnV::matriceCouts(graphe& G, vector<arete> aretes) {
     return std::vector<std::vector<int>>();
