@@ -130,7 +130,7 @@ void grapheOnV::dfsTarjan(int u, vector<int>& num, vector<int>& low, vector<bool
 
 // Méthode principale de l'algorithme de Tarjan pour trouver les composantes fortement connexes
 vector<vector<int>> grapheOnV::tarjan() const {
-    int V = this->nbSommets(); // Nombre de sommets
+    int V = nbSommets(); // Nombre de sommets
     vector<int> num(V + 1, -1); // Numéro de découverte
     vector<int> low(V + 1); // Valeur de basse
     vector<bool> onStack(V + 1, false); // Indique si un sommet est dans la pile de parcours

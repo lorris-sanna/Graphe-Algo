@@ -211,7 +211,7 @@ void graphe::fs_aps2adj(vector<int> aps, vector<int> fs, vector<vector<int>> &ma
 
     matAdj.resize(ns+1);
 
-    for(int i = 0; i < matAdj.size(); ++i)
+    for(size_t i = 0; i < matAdj.size(); ++i)
     {
         matAdj[i].resize(ns+1);
     }
@@ -277,6 +277,60 @@ void graphe::couts2fs_aps(const vector<vector<int>>& matCout, vector<int>& fs, v
             }
         }
         fs[indice_fs++] = 0;
+    }
+}
+
+void graphe::fs_aps2fp_app(vector<int> fs, vector<int> aps, vector<int>& fp, vector<int>& app)
+{
+    // Assurez-vous que les vecteurs fs et aps ne sont pas vides
+    if (fs.empty() || aps.empty()) {
+        // Gérer ce cas selon vos besoins
+        return;
+    }
+
+    // Assurez-vous que les vecteurs fp et app ont une taille suffisante
+    int n = aps[0];
+    fp.resize(fs[0] + 1);
+    app.resize(n + 1);
+
+    // Initialisez le premier élément de fp et app
+    fp[0] = fs[0];
+    app[0] = aps[0];
+
+    // Initialisez le vecteur ddi
+    vector<int> ddi(n + 1, 0);
+
+    // Remplissez le vecteur ddi
+    for (int i = 1; i <= fs[0]; i++) {
+        ddi[fs[i]]++;
+    }
+
+    // Initialisez l'identifiant
+    int id = 1;
+
+    // Remplissez le vecteur app et mettez à jour l'identifiant
+    for (int i = 1; i <= n; i++) {
+        app[i] = id;
+        id += ddi[i] + 1;
+        fp[id - 1] = 0;
+    }
+
+    // Copiez les valeurs de app dans ddi
+    for (int i = 1; i <= n; i++) {
+        ddi[i] = app[i];
+    }
+
+    // Initialisez le numéro de nœud
+    int noeud = 1;
+
+    // Remplissez le vecteur fp en fonction de fs, aps, ddi et noeud
+    for (int i = 1; i <= fs[0]; i++) {
+        if (fs[i] == 0) {
+            noeud++;
+        } else {
+            fp[ddi[fs[i]]] = noeud;
+            ddi[fs[i]]++;
+        }
     }
 }
 

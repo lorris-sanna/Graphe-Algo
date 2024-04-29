@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QDir>
 #include <QStringList>
+#include <unordered_set>
 
 #include "affichagegraphe.h"
 #include "graphe.h"
@@ -114,6 +115,12 @@ private slots:
     void on_btnRetourDijkstra_clicked();
 
     void on_btnExecDijkstra_clicked();
+
+    void on_btnOrdonnancement_clicked();
+
+    void on_btnRetourOrdonnancement_clicked();
+
+    void on_btnExecOrdonnancement_clicked();
 
 private:
     Ui::MainWindow *ui;

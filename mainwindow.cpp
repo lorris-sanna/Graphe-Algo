@@ -205,6 +205,7 @@ void MainWindow::on_btnTarjan_clicked()
         QGraphicsScene* scene = new QGraphicsScene(this);
 
         affichagegraphe->setOriente(grapheCourant->estOriente());
+        affichagegraphe->setValue(grapheCourant->estValue());
 
         vector<arete> listeAretes = affichagegraphe->getAretes();
         std::cout << "Liste des aretes : " << std::endl;
@@ -237,7 +238,7 @@ void MainWindow::on_btnExecTarjan_clicked()
     grapheOnV* grapheOnVCourant = dynamic_cast<grapheOnV*>(grapheCourant);
     vector<vector<int>> tarj = grapheOnVCourant->tarjan();
 
-    for (size_t i = 0; i < tarj.size(); ++i) {
+    /*for (size_t i = 0; i < tarj.size(); ++i) {
         std::cout << "Vecteur " << i << " : [";
         for (size_t j = 0; j < tarj[i].size(); ++j) {
             std::cout << tarj[i][j];
@@ -246,7 +247,116 @@ void MainWindow::on_btnExecTarjan_clicked()
             }
         }
         std::cout << "] (taille = " << tarj[i].size() << ")" << std::endl;
+    }*/
+}
+
+//------------------------------------------------------------------ ORDONNANCEMENT
+
+void MainWindow::on_btnOrdonnancement_clicked()
+{
+    if (grapheCourant != nullptr && grapheCourant->estValue() && grapheCourant->estOriente())
+    {
+        ui->stackedWidget->setCurrentWidget(ui->pageOrdonnancement);
+
+        affichagegraphe->matCout2Aretes(grapheCourant->getMAT());
+
+        QGraphicsScene* scene = new QGraphicsScene(this);
+
+        affichagegraphe->setOriente(grapheCourant->estOriente());
+        affichagegraphe->setValue(grapheCourant->estValue());
+
+        //Dessiner le graphe dans la scène
+        affichagegraphe->dessinerGraphe(scene);
+
+        //Configurer la vue avec la nouvelle scène
+        ui->graphicsViewOrdonnance->setScene(scene);
+
+        //Ajuster la vue pour afficher toute la scène
+        ui->graphicsViewOrdonnance->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+    } else {
+        QMessageBox::warning(nullptr, "Erreur", "Veuillez charger un graphe courant orienté valué.");
     }
+}
+
+void MainWindow::on_btnRetourOrdonnancement_clicked()
+{
+    ui->stackedWidget->setCurrentWidget(ui->pageAlgos);
+}
+
+void MainWindow::on_btnExecOrdonnancement_clicked()
+{
+    vector<int> fp;
+    vector<int> app;
+    grapheCourant->fs_aps2fp_app(grapheCourant->getFS(), grapheCourant->getAPS(), fp, app);
+
+    QString resultatFP;
+
+    resultatFP += "fp[" + QString::number(fp.size()) + "] = {";
+    for (size_t i = 0; i < fp.size(); ++i) {
+        if (i > 0) resultatFP += ", ";
+        resultatFP += QString::number(fp[i]);
+    }
+    resultatFP += "}";
+
+    cout << resultatFP.toStdString();
+    cout << endl;
+
+    QString resultatAPP;
+
+    resultatAPP += "app[" + QString::number(app.size()) + "] = {";
+    for (size_t i = 0; i < app.size(); ++i) {
+        if (i > 0) resultatAPP += ", ";
+        resultatAPP += QString::number(app[i]);
+    }
+    resultatAPP += "}";
+
+    cout << resultatAPP.toStdString();
+    cout << endl;
+
+    vector<int> d;
+
+    std::unordered_set<QString> sommetsAjoutes;
+
+    for (const auto& a : affichagegraphe->getAretes()) {
+        // Vérifier si la valeur de l'arête provient d'un sommet déjà ajouté à d
+        if (sommetsAjoutes.find(a.getDepart()->getNom()) == sommetsAjoutes.end()) {
+            // Si le sommet n'est pas déjà dans d, ajouter sa valeur à d
+            d.push_back(a.getValeur());
+            // Marquer ce sommet comme ajouté
+            sommetsAjoutes.insert(a.getDepart()->getNom());
+        }
+    }
+
+    cout << "Vecteur d : ";
+    for (int i = 0; i < d.size(); ++i) {
+        cout << d[i] << " ";
+    }
+    cout << endl;
+
+    grapheOV* grapheOVCourant = dynamic_cast<grapheOV*>(grapheCourant);
+
+    vector<int> fpc, appc, lc;
+
+    grapheOVCourant->ordonnancement(fp, app, d, fpc, appc, lc);
+
+    // Affichage des résultats
+    cout << "fpc : ";
+    for (int i = 0; i < fpc.size(); i++) {
+        cout << fpc[i] << " ";
+    }
+    cout << endl;
+
+    cout << "appc : ";
+    for (int i = 0; i < appc.size(); i++) {
+        cout << appc[i] << " ";
+    }
+    cout << endl;
+
+    cout << "lc : ";
+    for (int i = 0; i < lc.size(); i++) {
+        cout << lc[i] << " ";
+    }
+    cout << endl;
 }
 
 //------------------------------------------------------------------ DIJKSTRA
@@ -1043,7 +1153,7 @@ void MainWindow::on_btnTerminer_clicked()
             graphe->setOriente(false);
             graphe->setValue(true);
         }
-        else
+        else if (affichagegraphe->estOriente() && affichagegraphe->estValue())
         {
             graphe = new class grapheOV(affichagegraphe->creerGraphe());
             graphe->setOriente(true);

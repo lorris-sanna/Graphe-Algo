@@ -42,6 +42,7 @@ class graphe
         void adj2fs_aps(const vector<vector<int>> matAdj, vector<int> &fs, vector<int> &aps);
         void couts2fs_aps(const vector<vector<int>>& matCout, vector<int>& fs, vector<int>& aps);
         virtual vector<vector<int>> matriceCouts(graphe& G, vector<arete> aretes) = 0;
+        void fs_aps2fp_app(vector<int> fs, vector<int> aps, vector<int>& fp, vector<int>& app);
         QString fsToString() const;
         QString apsToString() const;
         virtual vector<vector<int>> lireMatDepuisFichier(const string& nomFichierIN) = 0;

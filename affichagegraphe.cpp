@@ -150,16 +150,16 @@ void affichagegraphe::matAdj2Aretes(vector<vector<int>> matAdj) {
 
 void affichagegraphe::matCout2Aretes(vector<vector<int>> matCout) {
     // Parcourir la matrice de coûts
-    for (size_t i = 0; i < matCout.size(); ++i) {
-        for (size_t j = 0; j < matCout[i].size(); ++j) {
-            if (matCout[i][j] != std::numeric_limits<int>::max() && matCout[i][j] != 0)
+    for (size_t i = 1; i < matCout.size(); ++i) {
+        for (size_t j = 1; j < matCout[i].size(); ++j) {
+            if (matCout[i][j] != INT_MAX && i != j)
             {
                 // Obtenir la valeur du coût
                 int valeur = matCout[i][j];
 
                 // Obtenir le nom des sommets de départ et d'arrivée
-                QString nomSommetDepart = QString::number(i+1);
-                QString nomSommetArrivee = QString::number(j+1);
+                QString nomSommetDepart = QString::number(i);
+                QString nomSommetArrivee = QString::number(j);
 
                 // Ajouter les sommets si nécessaire
                 ajouterSommets(nomSommetDepart, nomSommetArrivee);
