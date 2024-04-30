@@ -233,6 +233,8 @@ void MainWindow::on_btnTarjan_clicked()
 void MainWindow::on_btnRetourTarjan_clicked()
 {
     ui->stackedWidget->setCurrentWidget(ui->pageAlgos);
+    ui->labelTarjanCfc->setText("");
+    ui->labelTarjanCfc2->setText("");
 }
 
 void MainWindow::on_btnExecTarjan_clicked()
@@ -269,14 +271,29 @@ void MainWindow::on_btnExecTarjan_clicked()
         tarjanString += composante;
     }
 
+    vector<int> fsReduit, apsReduit;
+    vector<vector<int>> matAdj;
+
+    affichagegraphe->reset();
+
+    grapheOnVCourant->graphReduit(fsReduit, apsReduit);
+
+    grapheOnVCourant->fs_aps2adj(apsReduit, fsReduit, matAdj);
+
+    affichagegraphe->matAdj2Aretes(matAdj);
+
+    qDebug() << "Taille aretes : " << affichagegraphe->getAretes().size();
+
+    if (affichagegraphe->getAretes().size() != 0) {
+        ui->btnGrapheReduit->setVisible(true);
+    } else {
+        ui->btnGrapheReduit->setVisible(false);
+        tarjanString += "\n(Pas de graphe réduit)";
+    }
+
     // Affichage de la chaîne de caractères dans le QLabel
     ui->labelTarjanCfc->setText(tarjanString);
     ui->labelTarjanCfc2->setText(tarjanString);
-
-    if (ui->labelTarjanCfc->text() != "")
-    {
-        ui->btnGrapheReduit->setVisible(true);
-    }
 }
 
 void MainWindow::on_btnGrapheReduit_clicked()
@@ -296,8 +313,6 @@ void MainWindow::on_btnGrapheReduit_clicked()
     grapheOnVCourant->fs_aps2adj(apsReduit, fsReduit, matAdj);
 
     affichagegraphe->matAdj2Aretes(matAdj);
-
-
 
     QGraphicsScene* scene = new QGraphicsScene(this);
 
@@ -1026,14 +1041,16 @@ void MainWindow::on_btnChoisirGrapheCourant_clicked()
         if (fichierExiste)
         {
             QMessageBox::warning(nullptr, "Succès", "Le graphe du fichier '" + ui->editTxtFichier2->text() + "' est désormais courant.");
-            fichierExiste = false;
+            //fichierExiste = false;
 
             vector<int> APSCourant;
             vector<int> FSCourant;
             vector<vector<int>> matCourant;
 
-            QString cheminFichier = repertoire.absoluteFilePath(ui->editTxtFichier2->text());
-            std::ifstream fichier(cheminFichier.toStdString());
+            //QString cheminFichier = repertoire.absoluteFilePath(ui->editTxtFichier2->text());
+            //qDebug() << "Chemin du fichier : " << cheminFichier; // Afficher le chemin du fichier
+
+            std::ifstream fichier("graphes/" + ui->editTxtFichier2->text().toStdString());
 
             std::vector<std::string> dernieresLignes;
 
@@ -1045,51 +1062,55 @@ void MainWindow::on_btnChoisirGrapheCourant_clicked()
                         dernieresLignes.erase(dernieresLignes.begin());
                     }
                 }
-            }
 
-            // Analyser la dernière ligne pour déterminer la nature du graphe
-            bool oriente = (dernieresLignes[0] == "1");
-            bool value = (dernieresLignes[1] == "1");
+                // Analyser la dernière ligne pour déterminer la nature du graphe
+                bool oriente = (dernieresLignes[0] == "1");
+                bool value = (dernieresLignes[1] == "1");
 
-            cout << oriente;
-            cout << value;
+                cout << oriente;
+                cout << value;
 
-            // Créer un nouveau graphe selon le type déterminé
-            if (oriente) {
-                if (value) {
-                    grapheCourant = new grapheOV();
+                // Créer un nouveau graphe selon le type déterminé
+                if (oriente) {
+                    if (value) {
+                        grapheCourant = new grapheOV();
+                    } else {
+                        grapheCourant = new grapheOnV();
+                    }
+                    grapheCourant->setValue(value);
+                    grapheCourant->setOriente(true);
                 } else {
-                    grapheCourant = new grapheOnV();
+                    if (value) {
+                        grapheCourant = new grapheVnO();
+                    } else {
+                        grapheCourant = new grapheNoNv();
+                    }
+                    grapheCourant->setValue(value);
+                    grapheCourant->setOriente(false);
                 }
-                grapheCourant->setValue(value);
-                grapheCourant->setOriente(true);
+                matCourant = grapheCourant->lireMatDepuisFichier(ui->editTxtFichier2->text().toStdString());
+
+                if (grapheCourant->estValue())
+                {
+                    grapheCourant->couts2fs_aps(matCourant, FSCourant, APSCourant);
+                } else
+                {
+                    grapheCourant->adj2fs_aps(matCourant, FSCourant, APSCourant);
+                }
+
+                grapheCourant->setFS(FSCourant);
+                grapheCourant->setAPS(APSCourant);
+                grapheCourant->setMAT(matCourant);
+
+                cout << grapheCourant->fsToString().toStdString();
+                cout << grapheCourant->apsToString().toStdString();
+
+                ui->editTxtFichier2->clear();
             } else {
-                if (value) {
-                    grapheCourant = new grapheVnO();
-                } else {
-                    grapheCourant = new grapheNoNv();
-                }
-                grapheCourant->setValue(value);
-                grapheCourant->setOriente(false);
-            }
-            matCourant = grapheCourant->lireMatDepuisFichier(ui->editTxtFichier2->text().toStdString());
-
-            if (grapheCourant->estValue())
-            {
-                grapheCourant->couts2fs_aps(matCourant, FSCourant, APSCourant);
-            } else
-            {
-                grapheCourant->adj2fs_aps(matCourant, FSCourant, APSCourant);
+                QMessageBox::warning(nullptr, "Erreur", "Impossible d'ouvrir le fichier.");
             }
 
-            grapheCourant->setFS(FSCourant);
-            grapheCourant->setAPS(APSCourant);
-            grapheCourant->setMAT(matCourant);
 
-            cout << grapheCourant->fsToString().toStdString();
-            cout << grapheCourant->apsToString().toStdString();
-
-            ui->editTxtFichier2->clear();
         } else {
             QMessageBox::warning(nullptr, "Erreur", "Le fichier entré n'existe pas.");
         }

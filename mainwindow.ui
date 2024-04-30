@@ -990,7 +990,7 @@
         <x>10</x>
         <y>90</y>
         <width>881</width>
-        <height>411</height>
+        <height>381</height>
        </rect>
       </property>
      </widget>
@@ -1020,9 +1020,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>510</y>
+        <y>480</y>
         <width>881</width>
-        <height>61</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="font">
@@ -1068,7 +1068,7 @@
         <x>10</x>
         <y>90</y>
         <width>881</width>
-        <height>411</height>
+        <height>381</height>
        </rect>
       </property>
      </widget>
@@ -1094,9 +1094,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>510</y>
+        <y>480</y>
         <width>881</width>
-        <height>61</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="font">
@@ -1112,7 +1112,7 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="label_10">
+     <widget class="QLabel" name="labelGrapheReduit">
       <property name="geometry">
        <rect>
         <x>200</x>

@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QStringList>
 #include <unordered_set>
+#include <QTimer>
 
 #include "affichagegraphe.h"
 #include "graphe.h"
