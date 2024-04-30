@@ -81,52 +81,9 @@ void grapheOV::afficherVecteur(const std::vector<int>& vecteur) {
     std::cout << std::endl;
 }
 
-void grapheOV::ordonnancement(const vector<int>& fp, const vector<int>& app, const vector<int>& d, vector<int>& fpc, vector<int>& appc, vector<int>& lc)
+/*void grapheOV::ordonnancement(const vector<int>& fp, const vector<int>& app, const vector<int>& d, vector<int>& fpc, vector<int>& appc, vector<int>& lc) // Non implémenté
 {
-    int n = app[0]; // Nombre total de tâches
-    fpc.resize(n + 1); // Initialisation du vecteur des dates au plus tôt
-    appc.resize(n + 1); // Initialisation du vecteur des successeurs critiques
-    lc.resize(n + 1); // Initialisation du vecteur des dates au plus tôt
-    appc[0] = n;
-    lc[0] = n;
-
-    int kc = 1; // Indice du prochain successeur critique
-    int t, lg;
-
-    lc[1] = 0; // Date au plus tôt de la première tâche
-    fpc[1] = 0; // Initialisation du vecteur des successeurs critiques
-    appc[1] = 0;
-
-    // Parcours de toutes les tâches
-    for(int s = 2; s <= n; s++)
-    {
-        lc[s] = 0; // Initialisation de la date au plus tôt de la tâche s
-        appc[s] = kc + 1; // Initialisation de l'indice de départ des successeurs critiques de la tâche s
-
-        // Parcours des tâches précédentes de la tâche s
-        for(int k = app[s]; (t = fp[k]) != 0; k++)
-        {
-            // Calcul de la date au plus tôt de la tâche s
-            lg = lc[t] + d[t];
-
-            // Mise à jour de la date au plus tôt et des successeurs critiques si nécessaire
-            if (lg >= lc[s])
-            {
-                if (lg > lc[s])
-                {
-                    lc[s] = lg;
-                    kc = appc[s];
-                    fpc[kc] = t;
-                } else {
-                    kc++;
-                    fpc[kc] = t;
-                }
-            }
-        }
-        kc++;
-        fpc[kc] = 0; // Marquage de la fin des successeurs critiques de la tâche s
-    }
-}
+}*/
 
 vector<vector<int>> grapheOV::matriceCouts(graphe& G, vector<arete> aretes)
 {
